@@ -1,0 +1,34 @@
+settings:
+  recovery:
+    index: true
+    events: false
+    tools: false
+  legacy:
+    force: false
+    interval: 0ms
+schema:
+- name: kudai-user-service
+  path: .
+  commands:
+    clean:
+      status: true
+    run:
+      status: true
+  args:
+  - 0.0.0.0:9999
+  - tcp(178.62.107.160:3306)
+  - root
+  - mysqlrocks
+  - kudaki_user_domain
+  watcher:
+    extensions:
+    - go
+    paths:
+    - /
+    ignored_paths: 
+    - .git
+    - .realize
+    - vendor
+    scripts:
+    - type: before
+      command: taskkill /IM "kudaki-user-service.exe" /F
