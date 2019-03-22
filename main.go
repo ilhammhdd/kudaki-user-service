@@ -3,40 +3,27 @@ package main
 import (
 	"os"
 
-	"github.com/ilhammhdd/kudaki-user-service/adapters"
+	"github.com/ilhammhdd/kudaki-user-service/externals/eventsourcing"
 
-	"github.com/ilhammhdd/go_safe"
+	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
 
-	"github.com/ilhammhdd/go_error"
-
-	"github.com/ilhammhdd/go_db"
-
-	"github.com/ilhammhdd/kudaki-user-service/entities"
+	"github.com/ilhammhdd/go_tool/go_safe"
 )
 
 func init() {
 	if len(os.Args) == 6 {
-		os.Setenv("KAFKA_SERVER", os.Args[1])
+		os.Setenv("KAFKA_BROKERS", os.Args[1])
 		os.Setenv("DB_PATH", os.Args[2])
 		os.Setenv("DB_USERNAME", os.Args[3])
 		os.Setenv("DB_PASSWORD", os.Args[4])
 		os.Setenv("DB_NAME", os.Args[5])
 	}
 
-	entities.DBConfig = go_db.Config{
-		SourceName: os.Getenv("DB_PATH"),
-		User:       os.Getenv("DB_USERNAME"),
-		Password:   os.Getenv("DB_PASSWORD"),
-		Database:   os.Getenv("DB_NAME")}
-
-	db, err := entities.DBConfig.OpenDB()
-	entities.DB = db
-	go_error.HandleError(err)
-
+	mysql.OpenDB(os.Getenv("DB_PATH"), os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 }
 
 func main() {
 	wp := go_safe.NewWorkerPool()
-	wp.Job <- adapters.SignUp{}
+	wp.Job <- eventsourcing.NewSignup()
 	wp.PoolWG.Wait()
 }

@@ -7,23 +7,25 @@ WITH GRANT OPTION;
 
 USE kudaki_user_domain;
 
-CREATE TABLE IF NOT EXISTS profiles(
-    `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `uuid` VARCHAR(64) UNIQUE,
-    `first_name` VARCHAR(255),
-    `last_name` VARCHAR(255),
-    `gender` ENUM('MALE','FEMALE'),
-    `phone_number` VARCHAR(255),
-    `address` VARCHAR(255)
-);
-
 CREATE TABLE IF NOT EXISTS users (
     `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `uuid` VARCHAR(64) UNIQUE,
-    `username` VARCHAR(255) UNIQUE,
     `email` VARCHAR(255) UNIQUE,
     `password` VARCHAR(255),
     `token` VARCHAR(255),
-    `account_type` VARCHAR(255),
-    `role` ENUM('KUDAKI_TEAM','SHOP_OWNER','SHOP_KEEPER','HIKER')
+    `role` ENUM('USER','KUDAKI_TEAM','ORGANIZER'),
+    `phone_number` VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS profiles(
+    `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `user_uuid` VARCHAR(64) UNIQUE,
+    `uuid` VARCHAR(64) UNIQUE,
+    `full_name` VARCHAR(255),
+    `photo` VARCHAR(255),
+    `reputation` INT(20) UNSIGNED,
+
+    FOREIGN KEY(user_uuid)
+    REFERENCES users(uuid)
+    ON DELETE CASCADE
 );

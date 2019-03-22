@@ -42,7 +42,6 @@
   version = "v1.4.1"
 
 [[projects]]
-  branch = "master"
   digest = "1:239c4c7fd2159585454003d9be7207167970194216193a8a210b8d29576f19c9"
   name = "github.com/golang/protobuf"
   packages = [
@@ -53,7 +52,8 @@
     "ptypes/timestamp",
   ]
   pruneopts = "UT"
-  revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
+  revision = "b5d812f8a3706043e23a9cd5babf2e5423744d30"
+  version = "v1.3.1"
 
 [[projects]]
   digest = "1:e4f5819333ac698d294fe04dbf640f84719658d5c7ce195b10060cc37292ce79"
@@ -65,38 +65,25 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4dcc3820af7847342ab459bfb8afc12d7434018eee2053b021133f15afeea9dd"
-  name = "github.com/ilhammhdd/go_db"
-  packages = ["."]
+  digest = "1:04b050a5399d37edc7f1ae486bd465a7e5466865eddb4837c2a565bc57d30d8b"
+  name = "github.com/ilhammhdd/go_tool"
+  packages = [
+    "go_error",
+    "go_safe",
+  ]
   pruneopts = "UT"
-  revision = "7aa38e043ec0cdfde44e5d10491ab3090bfcd466"
+  revision = "fbc637ec50e38bac90a249d3ea039eb02fabbd07"
 
 [[projects]]
-  branch = "master"
-  digest = "1:6dcc24d8684884f63de0337d943b93205df00f9e5a8f60eab49111f52f9606f2"
-  name = "github.com/ilhammhdd/go_error"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "aab27038260dea0a6a59dbc8ebc36202a20fc81d"
-
-[[projects]]
-  branch = "master"
-  digest = "1:fb6ecde60ce1ac74886f191984adae72f3d2b8ddaa1ef2a2a020a4a679918cff"
-  name = "github.com/ilhammhdd/go_safe"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "19d5732a407705ffc5e488bf1966505fc20eaad4"
-
-[[projects]]
-  digest = "1:c7a5e79396b6eb570159df7a1d487ce5775bf43b7907976fbef6de544ea160ad"
+  digest = "1:d4c88b5ad20151a96c1e5a55547a944b6af623aa315f69ee0d172b00f95d27fb"
   name = "github.com/pierrec/lz4"
   packages = [
     ".",
     "internal/xxh32",
   ]
   pruneopts = "UT"
-  revision = "473cd7ce01a1113208073166464b98819526150e"
-  version = "v2.0.8"
+  revision = "062282ea0dcff40c9fb8525789eef9644b1fbd6e"
+  version = "v2.1.0"
 
 [[projects]]
   branch = "master"
@@ -108,60 +95,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1ecf2a49df33be51e757d0033d5d51d5f784f35f68e5a38f797b2d3f03357d71"
+  digest = "1:9d5b5d543996dd584da1db1e0de1926f3e4c3a8dba0fa2f8db70f3ebee2342e0"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "a4c6cb3142f211c99e4bf4cd769535b29a9b616f"
-
-[[projects]]
-  branch = "master"
-  digest = "1:cd17bc5dbd6ff6bd147dcd4712d423c1808f529c77c879c34df6b20b7501562b"
-  name = "golang.org/x/net"
-  packages = [
-    "http/httpguts",
-    "http2",
-    "http2/hpack",
-    "idna",
-    "internal/timeseries",
-    "trace",
-  ]
-  pruneopts = "UT"
-  revision = "3a22650c66bd7f4fb6d1e8072ffd7b75c8a27898"
-
-[[projects]]
-  branch = "master"
-  digest = "1:8207c052fb873f83c61a5aa16f6add5feb9881eda2112b56f69fd3b9e7f55c3f"
-  name = "golang.org/x/sys"
-  packages = ["unix"]
-  pruneopts = "UT"
-  revision = "b4e8571b14e03cc164df06f72b640ebce3899579"
-
-[[projects]]
-  digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
-  name = "golang.org/x/text"
-  packages = [
-    "collate",
-    "collate/build",
-    "internal/colltab",
-    "internal/gen",
-    "internal/tag",
-    "internal/triegen",
-    "internal/ucd",
-    "language",
-    "secure/bidirule",
-    "transform",
-    "unicode/bidi",
-    "unicode/cldr",
-    "unicode/norm",
-    "unicode/rangetable",
-  ]
-  pruneopts = "UT"
-  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
-  version = "v0.3.0"
+  revision = "a1f597ede03a7bef967a422b5b3a5bd08805a01e"
 
 [[projects]]
   digest = "1:c25289f43ac4a68d88b02245742347c94f1e108c534dda442188015ff80669b3"
@@ -170,54 +111,6 @@
   pruneopts = "UT"
   revision = "e9657d882bb81064595ca3b56cbe2546bbabf7b1"
   version = "v1.4.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:077c1c599507b3b3e9156d17d36e1e61928ee9b53a5b420f10f28ebd4a0b275c"
-  name = "google.golang.org/genproto"
-  packages = ["googleapis/rpc/status"]
-  pruneopts = "UT"
-  revision = "082222b4a5c572e33e82ee9162d1352c7cf38682"
-
-[[projects]]
-  digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
-  name = "google.golang.org/grpc"
-  packages = [
-    ".",
-    "balancer",
-    "balancer/base",
-    "balancer/roundrobin",
-    "binarylog/grpc_binarylog_v1",
-    "codes",
-    "connectivity",
-    "credentials",
-    "credentials/internal",
-    "encoding",
-    "encoding/proto",
-    "grpclog",
-    "internal",
-    "internal/backoff",
-    "internal/binarylog",
-    "internal/channelz",
-    "internal/envconfig",
-    "internal/grpcrand",
-    "internal/grpcsync",
-    "internal/syscall",
-    "internal/transport",
-    "keepalive",
-    "metadata",
-    "naming",
-    "peer",
-    "resolver",
-    "resolver/dns",
-    "resolver/passthrough",
-    "stats",
-    "status",
-    "tap",
-  ]
-  pruneopts = "UT"
-  revision = "a02b0774206b209466313a0b525d2c738fe407eb"
-  version = "v1.18.0"
 
 [[projects]]
   digest = "1:6981402aef27693f4b2ec619117abd263fde29f8c1dfac46eef0f35038d37513"
@@ -233,12 +126,12 @@
   input-imports = [
     "github.com/go-sql-driver/mysql",
     "github.com/golang/protobuf/proto",
+    "github.com/golang/protobuf/ptypes",
+    "github.com/golang/protobuf/ptypes/any",
     "github.com/golang/protobuf/ptypes/timestamp",
-    "github.com/ilhammhdd/go_db",
-    "github.com/ilhammhdd/go_error",
-    "github.com/ilhammhdd/go_safe",
+    "github.com/ilhammhdd/go_tool/go_error",
+    "github.com/ilhammhdd/go_tool/go_safe",
     "golang.org/x/crypto/bcrypt",
-    "google.golang.org/grpc",
     "gopkg.in/Shopify/sarama.v1",
   ]
   solver-name = "gps-cdcl"
