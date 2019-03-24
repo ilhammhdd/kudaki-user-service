@@ -23,6 +23,8 @@ schema:
   - service@kudaki.id
   - OlahragaOtak2K19!
   - mail.privateemail.com
+  - "./verification_private.pem"
+  - "./verification_public.pem"
   watcher:
     extensions:
     - go

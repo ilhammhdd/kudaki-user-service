@@ -7,12 +7,17 @@ import (
 	"net/smtp"
 	"os"
 
+	"github.com/ilhammhdd/go_tool/go_jwt"
+
+	"golang.org/x/crypto/bcrypt"
+
 	"gopkg.in/Shopify/sarama.v1"
 
 	"github.com/golang/protobuf/ptypes"
 
 	entities "github.com/ilhammhdd/kudaki-entities"
 	"github.com/ilhammhdd/kudaki-entities/events"
+	"github.com/ilhammhdd/kudaki-entities/user"
 
 	"github.com/ilhammhdd/go_tool/go_error"
 	"github.com/ilhammhdd/kudaki-entities/commands"
@@ -57,6 +62,8 @@ func Signup(su *commands.Signup, dbOperator DBOperator, esp EventSourceProducer)
 		return
 	}
 
+	createUserAndProfile(su, dbOperator)
+
 	uves.EventStatus.Code = events.Code_SUCCESS
 	uves.EventStatus.Messages = []string{"successfully sent verfication email"}
 	uves.EventStatus.Source = entities.Services_USER
@@ -76,7 +83,16 @@ func sendVerificationEmail(su *commands.Signup) error {
 		Address: su.Profile.User.Email}
 	password := os.Getenv("MAIL_PASSWORD")
 	host := os.Getenv("MAIL_HOST")
-	body := "sent from back end"
+
+	e := &go_jwt.ECDSA{
+		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
+		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
+
+	je := go_jwt.JWTExpiration(172800000)
+	jwtString, err := je.GenerateSignedJWTString(e, "unverified Kudaki.id user", "Kudaki.id user service")
+	go_error.ErrorHandled(err)
+
+	body := string(jwtString)
 
 	header := make(map[string]string)
 	header["From"] = from.String()
@@ -91,6 +107,25 @@ func sendVerificationEmail(su *commands.Signup) error {
 	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
 
 	auth := smtp.PlainAuth("", from.Address, password, host)
-	err := smtp.SendMail(host+":587", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
+	err = smtp.SendMail(host+":587", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
 	return err
+}
+
+func createUserAndProfile(su *commands.Signup, dbo DBOperator) {
+	password, err := bcrypt.GenerateFromPassword([]byte(su.Profile.User.Password), bcrypt.MinCost)
+	go_error.ErrorHandled(err)
+
+	dbo.Command(
+		"INSERT INTO users(uuid,email,password,role,phone_number) VALUES(?,?,?,?,?)",
+		su.Profile.User.Uuid,
+		su.Profile.User.Email,
+		password,
+		user.Role_name[int32(su.Profile.User.Role)],
+		su.Profile.User.PhoneNumber,
+	)
+
+	dbo.Command(
+		"INSERT INTO unverified_users(user_uuid) VALUES(?)",
+		su.Profile.User.Uuid,
+	)
 }
