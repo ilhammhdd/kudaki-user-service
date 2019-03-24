@@ -3,18 +3,16 @@ package eventsourcing
 import (
 	"log"
 
+	"github.com/ilhammhdd/kudaki-user-service/adapters"
+
 	"github.com/ilhammhdd/go_tool/go_error"
-	"github.com/ilhammhdd/kudaki-user-service/entities"
+	entities "github.com/ilhammhdd/kudaki-entities"
 	"github.com/ilhammhdd/kudaki-user-service/externals/kafka"
+	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
 	sarama "gopkg.in/Shopify/sarama.v1"
 )
 
-type Signup struct{}
-
-func NewSignup() Signup { return Signup{} }
-
-func (su Signup) Work() interface{} {
-
+func Signup() {
 	cons := kafka.NewConsumption()
 	cons.Set(entities.Topics_name[int32(entities.Topics_USER)], int32(entities.Partition_COMMAND), sarama.OffsetNewest)
 	partCons, sig, closeChan := cons.Consume()
@@ -22,16 +20,12 @@ func (su Signup) Work() interface{} {
 	for {
 		select {
 		case msg := <-partCons.Messages():
-			// adapters.Signup(mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
 			log.Println("consumed : ", string(msg.Value))
+			adapters.Signup(mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
 		case errs := <-partCons.Errors():
 			go_error.ErrorHandled(errs.Err)
 		case <-sig:
 			close(closeChan)
 		}
 	}
-
-	return nil
 }
-
-func (su Signup) Handle(interface{}) {}

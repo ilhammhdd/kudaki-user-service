@@ -3,7 +3,7 @@ package adapters
 import (
 	"log"
 
-	"github.com/ilhammhdd/kudaki-user-service/entities/commands"
+	"github.com/ilhammhdd/kudaki-entities/commands"
 	"github.com/ilhammhdd/kudaki-user-service/usecases"
 
 	"github.com/golang/protobuf/proto"
@@ -13,7 +13,7 @@ import (
 
 func Signup(dbOperator usecases.DBOperator, esp usecases.EventSourceProducer, msg []byte) {
 
-	var signUp commands.SignUp
+	var signUp commands.Signup
 
 	err := proto.Unmarshal(msg, &signUp)
 	if !go_error.ErrorHandled(err) {

@@ -65,14 +65,27 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:04b050a5399d37edc7f1ae486bd465a7e5466865eddb4837c2a565bc57d30d8b"
+  digest = "1:eeb7e5c155f9fbc17650a9de6e91021fd452111f251adacc43b0a16bbf92ea93"
   name = "github.com/ilhammhdd/go_tool"
   packages = [
     "go_error",
     "go_safe",
   ]
   pruneopts = "UT"
-  revision = "fbc637ec50e38bac90a249d3ea039eb02fabbd07"
+  revision = "e4869a6dbd38c440c7097534edc254a035b26e73"
+
+[[projects]]
+  branch = "master"
+  digest = "1:9c1fe50334b6be0ab7889d58f2cc72b52cde10424d4bb12974cdc8f02f42f82c"
+  name = "github.com/ilhammhdd/kudaki-entities"
+  packages = [
+    ".",
+    "commands",
+    "events",
+    "user",
+  ]
+  pruneopts = "UT"
+  revision = "203f8562647cddd9cd1be38065ab60fda588e76c"
 
 [[projects]]
   digest = "1:d4c88b5ad20151a96c1e5a55547a944b6af623aa315f69ee0d172b00f95d27fb"
@@ -102,15 +115,15 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "a1f597ede03a7bef967a422b5b3a5bd08805a01e"
+  revision = "b7391e95e576cacdcdd422573063bc057239113d"
 
 [[projects]]
   digest = "1:c25289f43ac4a68d88b02245742347c94f1e108c534dda442188015ff80669b3"
   name = "google.golang.org/appengine"
   packages = ["cloudsql"]
   pruneopts = "UT"
-  revision = "e9657d882bb81064595ca3b56cbe2546bbabf7b1"
-  version = "v1.4.0"
+  revision = "54a98f90d1c46b7731eb8fb305d2a321c30ef610"
+  version = "v1.5.0"
 
 [[projects]]
   digest = "1:6981402aef27693f4b2ec619117abd263fde29f8c1dfac46eef0f35038d37513"
@@ -127,10 +140,12 @@
     "github.com/go-sql-driver/mysql",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
-    "github.com/golang/protobuf/ptypes/any",
-    "github.com/golang/protobuf/ptypes/timestamp",
     "github.com/ilhammhdd/go_tool/go_error",
     "github.com/ilhammhdd/go_tool/go_safe",
+    "github.com/ilhammhdd/kudaki-entities",
+    "github.com/ilhammhdd/kudaki-entities/commands",
+    "github.com/ilhammhdd/kudaki-entities/events",
+    "github.com/ilhammhdd/kudaki-entities/user",
     "golang.org/x/crypto/bcrypt",
     "gopkg.in/Shopify/sarama.v1",
   ]

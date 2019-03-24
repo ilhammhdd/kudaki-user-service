@@ -19,7 +19,10 @@ schema:
   - tcp(178.62.107.160:3306)
   - root
   - mysqlrocks
-  - kudaki_user_domain
+  - kudaki_user
+  - service@kudaki.id
+  - OlahragaOtak2K19!
+  - mail.privateemail.com
   watcher:
     extensions:
     - go

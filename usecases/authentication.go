@@ -1,64 +1,96 @@
 package usecases
 
 import (
-	"net/http"
+	"encoding/base64"
+	"fmt"
+	"net/mail"
+	"net/smtp"
+	"os"
 
-	"github.com/ilhammhdd/kudaki-user-service/entities/domains"
-
-	"github.com/ilhammhdd/kudaki-user-service/entities/domains/user"
-
-	"github.com/ilhammhdd/kudaki-user-service/entities"
 	"gopkg.in/Shopify/sarama.v1"
 
 	"github.com/golang/protobuf/ptypes"
 
-	"github.com/ilhammhdd/kudaki-user-service/entities/events"
+	entities "github.com/ilhammhdd/kudaki-entities"
+	"github.com/ilhammhdd/kudaki-entities/events"
 
 	"github.com/ilhammhdd/go_tool/go_error"
-	"github.com/ilhammhdd/kudaki-user-service/entities/commands"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/ilhammhdd/kudaki-entities/commands"
 )
 
-func Signup(su *commands.SignUp, dbOperator DBOperator, esp EventSourceProducer) {
-	esp.Set(entities.Topics_name[int32(entities.Topics_USER)], int32(entities.Partition_EVENT), sarama.OffsetNewest)
+func Signup(su *commands.Signup, dbOperator DBOperator, esp EventSourceProducer) {
+	row, err := dbOperator.QueryRow("SELECT count(id) FROM users WHERE email=?", su.Profile.User.Email)
+	go_error.ErrorHandled(err)
 
-	sdu := &events.SignedUp{
-		Profile:     su.Profile,
-		User:        su.User,
+	uves := events.UserVerificationEmailSent{
 		Uuid:        su.Uuid,
-		EventStatus: &domains.EventStatus{},
+		User:        su.Profile.User,
+		EventStatus: &events.Status{},
 	}
 
-	rows, err := dbOperator.Query("SELECT id FROM users WHERE email=?", su.User.Email)
+	var userID uint
+	go_error.ErrorHandled(row.Scan(&userID))
 
-	defer rows.Close()
+	if userID > 0 {
+		uves.EventStatus.Code = events.Code_BAD_COMMAND
+		uves.EventStatus.Messages = []string{"user with the given email already exists"}
+		uves.EventStatus.Source = entities.Services_USER
+		uves.EventStatus.Timestamp = ptypes.TimestampNow()
 
-	if rows.Next() {
-		sdu.EventStatus.Code = http.StatusConflict
-		sdu.EventStatus.Messages = []string{"user with the given email already exists"}
-		sdu.EventStatus.Timestamp = ptypes.TimestampNow()
-
-		_, _, err = esp.SyncProduce(entities.Partition_name[int32(entities.Partition_EVENT)], sdu)
+		esp.Set(entities.Topics_name[int32(entities.Topics_USER)], int32(entities.Partition_EVENT), sarama.OffsetNewest)
+		_, _, err = esp.SyncProduce(entities.Partition_name[int32(entities.Partition_EVENT)], &uves)
 		go_error.ErrorHandled(err)
+
+		return
 	}
 
-	password, err := bcrypt.GenerateFromPassword([]byte(su.User.Password), bcrypt.MinCost)
+	if go_error.ErrorHandled(sendVerificationEmail(su)) {
+		uves.EventStatus.Code = events.Code_INTERNAL_ERROR
+		uves.EventStatus.Messages = []string{"error occured when sending verification email"}
+		uves.EventStatus.Source = entities.Services_USER
+		uves.EventStatus.Timestamp = ptypes.TimestampNow()
+
+		esp.Set(entities.Topics_name[int32(entities.Topics_USER)], int32(entities.Partition_EVENT), sarama.OffsetNewest)
+		_, _, err = esp.SyncProduce(entities.Partition_name[int32(entities.Partition_EVENT)], &uves)
+		go_error.ErrorHandled(err)
+
+		return
+	}
+
+	uves.EventStatus.Code = events.Code_SUCCESS
+	uves.EventStatus.Messages = []string{"successfully sent verfication email"}
+	uves.EventStatus.Source = entities.Services_USER
+	uves.EventStatus.Timestamp = ptypes.TimestampNow()
+
+	esp.Set(entities.Topics_name[int32(entities.Topics_USER)], int32(entities.Partition_EVENT), sarama.OffsetNewest)
+	_, _, err = esp.SyncProduce(entities.Partition_name[int32(entities.Partition_EVENT)], &uves)
 	go_error.ErrorHandled(err)
+}
 
-	dbOperator.Command(
-		"INSERT INTO users(uuid,email,password,token,role,phone_number) VALUES(?,?,?,?,?,?)",
-		su.User.Uuid,
-		su.User.Email,
-		password,
-		"",
-		user.Role_name[int32(su.User.Role)],
-		su.User.PhoneNumber,
-	)
+func sendVerificationEmail(su *commands.Signup) error {
+	from := mail.Address{
+		Name:    "Notification Kudaki.id",
+		Address: os.Getenv("MAIL")}
+	to := mail.Address{
+		Name:    su.Profile.FullName,
+		Address: su.Profile.User.Email}
+	password := os.Getenv("MAIL_PASSWORD")
+	host := os.Getenv("MAIL_HOST")
+	body := "sent from back end"
 
-	sdu.EventStatus.Code = http.StatusOK
-	sdu.EventStatus.Messages = []string{"successfully registered user"}
-	sdu.EventStatus.Timestamp = ptypes.TimestampNow()
+	header := make(map[string]string)
+	header["From"] = from.String()
+	header["To"] = to.String()
+	header["Subject"] = "User account verification"
+	header["Content-Transfer-Encoding"] = "base64"
 
-	_, _, err = esp.SyncProduce(entities.Partition_name[int32(entities.Partition_EVENT)], sdu)
-	go_error.ErrorHandled(err)
+	message := ""
+	for k, v := range header {
+		message += fmt.Sprintf("%s: %s\r\n", k, v)
+	}
+	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
+
+	auth := smtp.PlainAuth("", from.Address, password, host)
+	err := smtp.SendMail(host+":587", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
+	return err
 }
