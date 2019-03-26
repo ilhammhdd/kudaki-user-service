@@ -1,8 +1,6 @@
 package adapters
 
 import (
-	"log"
-
 	"github.com/ilhammhdd/kudaki-entities/commands"
 	"github.com/ilhammhdd/kudaki-user-service/usecases"
 
@@ -17,9 +15,6 @@ func Signup(dbOperator usecases.DBOperator, esp usecases.EventSourceProducer, ms
 
 	err := proto.Unmarshal(msg, &signUp)
 	if !go_error.ErrorHandled(err) {
-		log.Println("it's a SignUp command : ", signUp)
 		usecases.Signup(&signUp, dbOperator, esp)
 	}
-
-	log.Println("it's not a SignUp command")
 }

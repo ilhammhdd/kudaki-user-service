@@ -65,18 +65,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:eeb7e5c155f9fbc17650a9de6e91021fd452111f251adacc43b0a16bbf92ea93"
+  digest = "1:41fd30d45c0e1afaf1cc6b0436a337ff498334823bab40a09a9610e143c13b2d"
   name = "github.com/ilhammhdd/go_tool"
   packages = [
     "go_error",
+    "go_jwt",
     "go_safe",
   ]
   pruneopts = "UT"
-  revision = "e4869a6dbd38c440c7097534edc254a035b26e73"
+  revision = "eb070c0f25e82e8743348b17dcc8d8a1e4228582"
 
 [[projects]]
   branch = "master"
-  digest = "1:9c1fe50334b6be0ab7889d58f2cc72b52cde10424d4bb12974cdc8f02f42f82c"
+  digest = "1:7556f3b35e1adc8fbc1f6f203790be80cf0ac283e37f6a9ce406a8ecb89217f1"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     ".",
@@ -85,7 +86,7 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "203f8562647cddd9cd1be38065ab60fda588e76c"
+  revision = "b8766d1de15d01f76d74a2acaa55c3f0e6b6c8da"
 
 [[projects]]
   digest = "1:d4c88b5ad20151a96c1e5a55547a944b6af623aa315f69ee0d172b00f95d27fb"
@@ -115,7 +116,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "b7391e95e576cacdcdd422573063bc057239113d"
+  revision = "a5d413f7728c81fb97d96a2b722368945f651e78"
 
 [[projects]]
   digest = "1:c25289f43ac4a68d88b02245742347c94f1e108c534dda442188015ff80669b3"
@@ -141,6 +142,7 @@
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
     "github.com/ilhammhdd/go_tool/go_error",
+    "github.com/ilhammhdd/go_tool/go_jwt",
     "github.com/ilhammhdd/go_tool/go_safe",
     "github.com/ilhammhdd/kudaki-entities",
     "github.com/ilhammhdd/kudaki-entities/commands",

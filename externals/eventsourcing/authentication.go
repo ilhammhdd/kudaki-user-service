@@ -1,8 +1,6 @@
 package eventsourcing
 
 import (
-	"log"
-
 	"github.com/ilhammhdd/kudaki-user-service/adapters"
 
 	"github.com/ilhammhdd/go_tool/go_error"
@@ -20,7 +18,6 @@ func Signup() {
 	for {
 		select {
 		case msg := <-partCons.Messages():
-			log.Println("consumed : ", string(msg.Value))
 			adapters.Signup(mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
 		case errs := <-partCons.Errors():
 			go_error.ErrorHandled(errs.Err)

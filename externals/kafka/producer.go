@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/ilhammhdd/go_tool/go_error"
 	sarama "gopkg.in/Shopify/sarama.v1"
 )
@@ -28,7 +27,7 @@ func (p *Production) Get() (string, int32, int64) {
 	return p.topic, p.partition, p.offset
 }
 
-func (p *Production) SyncProduce(key string, eventSourcer proto.Message) (partition int32, offset int64, err error) {
+func (p *Production) SyncProduce(key string, value []byte) (partition int32, offset int64, err error) {
 	type rtrn struct {
 		Successes bool
 		Errors    bool
@@ -45,9 +44,6 @@ func (p *Production) SyncProduce(key string, eventSourcer proto.Message) (partit
 
 	defer prod.Close()
 
-	eventSourcerByte, err := proto.Marshal(eventSourcer)
-	go_error.ErrorHandled(err)
-
 	t, part, o := p.Get()
 
 	msg := sarama.ProducerMessage{
@@ -55,7 +51,7 @@ func (p *Production) SyncProduce(key string, eventSourcer proto.Message) (partit
 		Offset:    o,
 		Partition: part,
 		Key:       sarama.StringEncoder(key),
-		Value:     sarama.ByteEncoder(eventSourcerByte),
+		Value:     sarama.ByteEncoder(value),
 		Timestamp: time.Now(),
 	}
 
