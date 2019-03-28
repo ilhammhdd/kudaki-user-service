@@ -65,7 +65,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:41fd30d45c0e1afaf1cc6b0436a337ff498334823bab40a09a9610e143c13b2d"
+  digest = "1:08fbd4cebc7816d580c7647310c5aeb187da59fdecfec9e8606e9646205865ee"
   name = "github.com/ilhammhdd/go_tool"
   packages = [
     "go_error",
@@ -73,7 +73,7 @@
     "go_safe",
   ]
   pruneopts = "UT"
-  revision = "eb070c0f25e82e8743348b17dcc8d8a1e4228582"
+  revision = "8ff25a33923b9b4ce4370856c6b6488d11295629"
 
 [[projects]]
   branch = "master"
@@ -89,15 +89,15 @@
   revision = "b8766d1de15d01f76d74a2acaa55c3f0e6b6c8da"
 
 [[projects]]
-  digest = "1:d4c88b5ad20151a96c1e5a55547a944b6af623aa315f69ee0d172b00f95d27fb"
+  digest = "1:d886a3c32c8c1a770d07e36340f061d3afc948d065ffc3c9a19b01b34d4f0b65"
   name = "github.com/pierrec/lz4"
   packages = [
     ".",
     "internal/xxh32",
   ]
   pruneopts = "UT"
-  revision = "062282ea0dcff40c9fb8525789eef9644b1fbd6e"
-  version = "v2.1.0"
+  revision = "315a67e90e415bcdaff33057da191569bf4d8479"
+  version = "v2.1.1"
 
 [[projects]]
   branch = "master"
