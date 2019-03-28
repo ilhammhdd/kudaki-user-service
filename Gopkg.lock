@@ -65,7 +65,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:08fbd4cebc7816d580c7647310c5aeb187da59fdecfec9e8606e9646205865ee"
+  digest = "1:95799acd94a7d6bcb949cc1579384fb59c524e73192f0480f3fcb4c92e0fdbe9"
   name = "github.com/ilhammhdd/go_tool"
   packages = [
     "go_error",
@@ -73,7 +73,7 @@
     "go_safe",
   ]
   pruneopts = "UT"
-  revision = "8ff25a33923b9b4ce4370856c6b6488d11295629"
+  revision = "6b5ae88c22e0c91a308a11852d1c820871a99200"
 
 [[projects]]
   branch = "master"
