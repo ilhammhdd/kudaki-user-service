@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/ilhammhdd/go_tool/go_error"
+	"github.com/ilhammhdd/go-toolkit/errorkit"
 
 	_ "github.com/go-sql-driver/mysql"
 )

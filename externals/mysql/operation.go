@@ -3,7 +3,7 @@ package mysql
 import (
 	"database/sql"
 
-	"github.com/ilhammhdd/go_tool/go_error"
+	"github.com/ilhammhdd/go-toolkit/errorkit"
 )
 
 type DBOperation struct{}

@@ -1,6 +1,8 @@
 package usecases
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 type DBOperator interface {
 	Command(string, ...interface{}) error
@@ -8,3 +10,8 @@ type DBOperator interface {
 	QueryRow(string, ...interface{}) (*sql.Row, error)
 	QueryRowsToMap(string, ...interface{}) (*[]map[string]interface{}, error)
 }
+
+// type ProtoSql interface {
+// 	ScanRow(*sql.Row) error
+// 	ScanRows(*sql.Rows) error
+// }

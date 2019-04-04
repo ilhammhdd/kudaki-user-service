@@ -5,11 +5,11 @@ import (
 	"os/signal"
 	"strings"
 
-	"github.com/ilhammhdd/go_tool/go_safe"
+	"github.com/ilhammhdd/go-toolkit/safekit"
 
 	sarama "gopkg.in/Shopify/sarama.v1"
 
-	"github.com/ilhammhdd/go_tool/go_error"
+	"github.com/ilhammhdd/go-toolkit/errorkit"
 )
 
 type Consumption struct {

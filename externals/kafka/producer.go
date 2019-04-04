@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ilhammhdd/go_tool/go_error"
+	"github.com/ilhammhdd/go-toolkit/errorkit"
 	sarama "gopkg.in/Shopify/sarama.v1"
 )
 
