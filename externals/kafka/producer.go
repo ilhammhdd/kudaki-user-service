@@ -40,7 +40,7 @@ func (p *Production) SyncProduce(key string, value []byte) (partition int32, off
 		Errors:    true}
 
 	prod, err := sarama.NewSyncProducer(strings.Split(os.Getenv("KAFKA_BROKERS"), ","), config)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	defer prod.Close()
 

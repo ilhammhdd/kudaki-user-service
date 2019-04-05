@@ -22,7 +22,7 @@ ConsLoop:
 		case msg := <-partCons.Messages():
 			adapters.Signup(mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
 		case errs := <-partCons.Errors():
-			go_error.ErrorHandled(errs.Err)
+			errorkit.ErrorHandled(errs.Err)
 		case <-sig:
 			close(closeChan)
 			break ConsLoop
@@ -41,7 +41,7 @@ ConsLoop:
 		case msg := <-partCons.Messages():
 			adapters.VerifyUser(mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
 		case errs := <-partCons.Errors():
-			go_error.ErrorHandled(errs.Err)
+			errorkit.ErrorHandled(errs.Err)
 		case <-sig:
 			close(closeChan)
 			break ConsLoop
@@ -60,7 +60,7 @@ ConsLoop:
 		case msg := <-partCons.Messages():
 			adapters.Login(mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
 		case err := <-partCons.Errors():
-			go_error.ErrorHandled(err)
+			errorkit.ErrorHandled(err)
 		case <-sig:
 			close(closeChan)
 			break ConsLoop

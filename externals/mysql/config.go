@@ -14,7 +14,7 @@ var DB *sql.DB
 func OpenDB(sourceName, user, password, database string) {
 	dbDataSource := fmt.Sprintf("%s:%s@%s/%s?parseTime=true", user, password, sourceName, database)
 	initDB, err := sql.Open("mysql", dbDataSource)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	DB = initDB
 }

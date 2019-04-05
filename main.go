@@ -10,14 +10,13 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/ilhammhdd/go-toolkit/errorkit"
+	"github.com/ilhammhdd/go-toolkit/jwtkit"
+	"github.com/ilhammhdd/go-toolkit/safekit"
 
 	"github.com/ilhammhdd/kudaki-user-service/externals/eventsourcing"
 	external_grpc "github.com/ilhammhdd/kudaki-user-service/externals/grpc"
 
 	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
-
-	"github.com/ilhammhdd/go-toolkit/jwtkit"
-	"github.com/ilhammhdd/go-toolkit/safekit"
 )
 
 func init() {
@@ -43,14 +42,14 @@ func init() {
 }
 
 func initJWT() {
-	e := &go_jwt.ECDSA{
+	e := &jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
-	go_error.ErrorHandled(go_jwt.GeneratePublicPrivateToPEM(e))
+	errorkit.ErrorHandled(jwtkit.GeneratePublicPrivateToPEM(e))
 }
 
 func main() {
-	wp := go_safe.NewWorkerPool()
+	wp := safekit.NewWorkerPool()
 
 	wp.Work <- eventsourcing.Signup
 	wp.Work <- eventsourcing.VerifyUser
@@ -62,9 +61,9 @@ func main() {
 
 func grpcListener() {
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", os.Getenv("GRPC_ADDRESS"), os.Getenv("GRPC_PORT")))
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	grpcServer := grpc.NewServer()
 	rpc.RegisterUserServer(grpcServer, external_grpc.User{})
-	go_error.ErrorHandled(grpcServer.Serve(lis))
+	errorkit.ErrorHandled(grpcServer.Serve(lis))
 }

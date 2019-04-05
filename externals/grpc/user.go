@@ -28,11 +28,11 @@ func (u User) Login(context.Context, *events.LoginRequested) (*events.Loggedin, 
 
 func (u User) UserAuthentication(ctx context.Context, uar *events.UserAuthenticationRequested) (*events.UserAuthenticated, error) {
 
-	e := &go_jwt.ECDSA{
+	e := &jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
 
-	ok, err := go_jwt.VerifyJWTString(e, go_jwt.JWTString(uar.Jwt))
+	ok, err := jwtkit.VerifyJWTString(e, jwtkit.JWTString(uar.Jwt))
 
 	ua := events.UserAuthenticated{
 		Uid:         uar.Uid,

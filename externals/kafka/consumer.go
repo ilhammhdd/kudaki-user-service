@@ -5,11 +5,10 @@ import (
 	"os/signal"
 	"strings"
 
+	"github.com/ilhammhdd/go-toolkit/errorkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
 
 	sarama "gopkg.in/Shopify/sarama.v1"
-
-	"github.com/ilhammhdd/go-toolkit/errorkit"
 )
 
 type Consumption struct {
@@ -35,17 +34,17 @@ func (c *Consumption) Consume() (sarama.PartitionConsumer, chan os.Signal, chan 
 	closeConsumer := make(chan bool)
 
 	cons, err := sarama.NewConsumer(strings.Split(os.Getenv("KAFKA_BROKERS"), ","), nil)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	topic, partition, offset := c.Get()
 
 	partCons, err := cons.ConsumePartition(topic, partition, offset)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 
-	go_safe.Do(func() {
+	safekit.Do(func() {
 		_, ok := <-closeConsumer
 		if !ok {
 			cons.Close()
@@ -58,10 +57,10 @@ func (c *Consumption) Consume() (sarama.PartitionConsumer, chan os.Signal, chan 
 
 // func (c *Consumption) Consume() (sarama.PartitionConsumer, chan os.Signal) {
 // 	cons, err := sarama.NewConsumer(strings.Split(os.Getenv("KAFKA_BROKERS"), ","), nil)
-// 	go_error.ErrorHandled(err)
+// 	errorkit.ErrorHandled(err)
 
 // 	partCons, err := cons.ConsumePartition(c.Topic, c.Partition, c.Offset)
-// 	go_error.ErrorHandled(err)
+// 	errorkit.ErrorHandled(err)
 
 // 	signals := make(chan os.Signal, 1)
 // 	signal.Notify(signals, os.Interrupt)
@@ -74,24 +73,24 @@ func (c *Consumption) Consume() (sarama.PartitionConsumer, chan os.Signal, chan 
 // 	errChan := make(chan error)
 
 // 	cons, err := sarama.NewConsumer(strings.Split(os.Getenv("KAFKA_BROKERS"), ","), nil)
-// 	go_error.ErrorHandled(err)
+// 	errorkit.ErrorHandled(err)
 
 // 	partCons, err := cons.ConsumePartition(c.Topic, c.Partition, c.Offset)
-// 	go_error.ErrorHandled(err)
+// 	errorkit.ErrorHandled(err)
 
 // 	signals := make(chan os.Signal, 1)
 // 	signal.Notify(signals, os.Interrupt)
 
 // 	var re EventSourcer
 
-// 	go_safe.Do(func() {
+// 	safekit.Do(func() {
 // 	ConsLoop:
 // 		for {
 // 			select {
 // 			case msg := <-partCons.Messages():
 // 				{
 // 					err := proto.Unmarshal(msg.Value, re)
-// 					go_error.ErrorHandled(err)
+// 					errorkit.ErrorHandled(err)
 
 // 					log.Println("resulted event : ", re)
 

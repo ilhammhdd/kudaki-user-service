@@ -12,14 +12,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/ilhammhdd/go-toolkit/jwtkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
 	sarama "gopkg.in/Shopify/sarama.v1"
 
 	"github.com/google/uuid"
 
 	"github.com/golang/protobuf/proto"
-
-	"github.com/ilhammhdd/go-toolkit/jwtkit"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -34,7 +33,7 @@ import (
 
 func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventSourceProducer) {
 	password, err := bcrypt.GenerateFromPassword([]byte(su.Profile.User.Password), bcrypt.MinCost)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 	su.Profile.User.Password = string(password)
 
 	var eventStatus events.Status
@@ -44,10 +43,10 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventSourcePr
 	}
 
 	row, err := dbOperator.QueryRow("SELECT count(id) FROM users WHERE email=?", su.Profile.User.Email)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	var userID uint
-	go_error.ErrorHandled(row.Scan(&userID))
+	errorkit.ErrorHandled(row.Scan(&userID))
 
 	if userID > 0 {
 		eventStatus.HttpCode = http.StatusConflict
@@ -55,12 +54,12 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventSourcePr
 		eventStatus.Timestamp = ptypes.TimestampNow()
 		uves.EventStatus = &eventStatus
 		uvesBytes, err := proto.Marshal(&uves)
-		go_error.ErrorHandled(err)
+		errorkit.ErrorHandled(err)
 
 		esp.Set(entities.Topics_name[int32(entities.Topics_USER_VERIFICATION_EMAIL_SENT)], 0, sarama.OffsetNewest)
 		start := time.Now()
 		partition, offset, err := esp.SyncProduce(uves.Uid, uvesBytes)
-		go_error.ErrorHandled(err)
+		errorkit.ErrorHandled(err)
 
 		duration := time.Since(start)
 		log.Println(duration.Seconds(), " seconds passed after producing")
@@ -70,19 +69,19 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventSourcePr
 		return
 	}
 
-	go_safe.Do(func() {
-		if go_error.ErrorHandled(sendVerificationEmail(su)) {
+	safekit.Do(func() {
+		if errorkit.ErrorHandled(sendVerificationEmail(su)) {
 			eventStatus.HttpCode = http.StatusBadRequest
 			eventStatus.Errors = []string{"error occured when sending verification email"}
 			eventStatus.Timestamp = ptypes.TimestampNow()
 			uves.EventStatus = &eventStatus
 			uvesBytes, err := proto.Marshal(&uves)
-			go_error.ErrorHandled(err)
+			errorkit.ErrorHandled(err)
 
 			esp.Set(entities.Topics_name[int32(entities.Topics_USER_VERIFICATION_EMAIL_SENT)], 0, sarama.OffsetNewest)
 			start := time.Now()
 			partition, offset, err := esp.SyncProduce(uves.Uid, uvesBytes)
-			go_error.ErrorHandled(err)
+			errorkit.ErrorHandled(err)
 
 			duration := time.Since(start)
 			log.Println(duration.Seconds(), " seconds passed after producing")
@@ -98,27 +97,27 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventSourcePr
 	eventStatus.Timestamp = ptypes.TimestampNow()
 	uves.EventStatus = &eventStatus
 	uvesBytes, err := proto.Marshal(&uves)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	log.Println("UserVerificationEmailSent", uves.Uid)
 
 	esp.Set(entities.Topics_name[int32(entities.Topics_USER_VERIFICATION_EMAIL_SENT)], 0, sarama.OffsetNewest)
 	start := time.Now()
 	_, _, err = esp.SyncProduce(uves.Uid, uvesBytes)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 	duration := time.Since(start)
 	log.Println(duration.Seconds(), " seconds passed after producing")
 }
 
 func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator, esp EventSourceProducer) {
-	e := go_jwt.ECDSA{
+	e := jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
 
-	log.Println("verify jwt: ", go_jwt.JWTString(vu.VerifyUserJwt))
+	log.Println("verify jwt: ", jwtkit.JWTString(vu.VerifyUserJwt))
 
-	verified, err := go_jwt.VerifyJWTString(&e, go_jwt.JWTString(vu.VerifyUserJwt))
-	go_error.ErrorHandled(err)
+	verified, err := jwtkit.VerifyJWTString(&e, jwtkit.JWTString(vu.VerifyUserJwt))
+	errorkit.ErrorHandled(err)
 
 	sdu := events.Signedup{
 		Uid: vu.Uid,
@@ -126,15 +125,15 @@ func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator, esp Event
 			Timestamp: ptypes.TimestampNow()}}
 
 	if verified {
-		validated, err := go_jwt.ValidateExpired(go_jwt.JWTString(vu.VerifyUserJwt))
-		go_error.ErrorHandled(err)
+		validated, err := jwtkit.ValidateExpired(jwtkit.JWTString(vu.VerifyUserJwt))
+		errorkit.ErrorHandled(err)
 
 		if validated {
-			jwt, err := go_jwt.GetJWT(go_jwt.JWTString(vu.VerifyUserJwt))
-			go_error.ErrorHandled(err)
+			jwt, err := jwtkit.GetJWT(jwtkit.JWTString(vu.VerifyUserJwt))
+			errorkit.ErrorHandled(err)
 
 			err = dbOperator.Command("DELETE FROM unverified_users WHERE user_uuid=?", jwt.Payload.Claims["user_uuid"])
-			go_error.ErrorHandled(err)
+			errorkit.ErrorHandled(err)
 
 			sdu.EventStatus.HttpCode = http.StatusOK
 			sdu.EventStatus.Messages = append(sdu.EventStatus.Messages, "user account verified")
@@ -148,7 +147,7 @@ func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator, esp Event
 	}
 
 	sduBytes, err := proto.Marshal(&sdu)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	esp.Set(entities.Topics_name[int32(entities.Topics_SIGNED_UP)], 0, sarama.OffsetNewest)
 	esp.SyncProduce(sdu.Uid, sduBytes)
@@ -156,7 +155,7 @@ func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator, esp Event
 
 func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
 	row, err := dbo.QueryRow("SELECT * FROM users WHERE email=?", lr.User.Email)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	var usr user.User
 	var usrID uint64
@@ -167,7 +166,7 @@ func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
 
 	if err == sql.ErrNoRows {
 		err = produceLoggedin(esp, lr.Uid, []string{"user with the given email doesn't exists"}, nil, http.StatusUnauthorized, &usr)
-		if !go_error.ErrorHandled(err) {
+		if !errorkit.ErrorHandled(err) {
 			return
 		}
 	}
@@ -178,7 +177,7 @@ func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
 
 	if err != sql.ErrNoRows {
 		err = produceLoggedin(esp, lr.Uid, []string{"user unverified"}, nil, http.StatusUnauthorized, &usr)
-		if !go_error.ErrorHandled(err) {
+		if !errorkit.ErrorHandled(err) {
 			return
 		}
 	}
@@ -190,26 +189,26 @@ func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
 
 	if err := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(lr.User.Password)); err != nil {
 		err = produceLoggedin(esp, lr.Uid, []string{"wrong password"}, nil, http.StatusUnauthorized, &usr)
-		if !go_error.ErrorHandled(err) {
+		if !errorkit.ErrorHandled(err) {
 			return
 		}
 	}
 
-	e := &go_jwt.ECDSA{
+	e := &jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
 
-	jwtString, err := go_jwt.JWTExpiration(5.256e+9).GenerateSignedJWTString(
+	jwtString, err := jwtkit.JWTExpiration(5.256e+9).GenerateSignedJWTString(
 		e,
 		"verified Kudaki.id user",
 		"Kudaki.id user service",
 		&map[string]interface{}{
 			"user_uuid": lr.User.Uuid})
 
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	err = dbo.Command("UPDATE users SET token=? WHERE uuid=?", string(jwtString), usr.Uuid)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	usr.Token = string(jwtString)
 	produceLoggedin(esp, lr.Uid, nil, []string{"successfully logged in"}, http.StatusOK, &usr)
@@ -228,7 +227,7 @@ func produceLoggedin(esp EventSourceProducer, requestUID string, errs []string, 
 	loggedin.EventStatus.Timestamp = ptypes.TimestampNow()
 	loggedin.User = usr
 	loggedinBytes, err := proto.Marshal(&loggedin)
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	_, _, err = esp.SyncProduce(loggedin.Uid, loggedinBytes)
 
@@ -245,18 +244,18 @@ func sendVerificationEmail(su *events.SignupRequested) error {
 	password := os.Getenv("MAIL_PASSWORD")
 	host := os.Getenv("MAIL_HOST")
 
-	e := &go_jwt.ECDSA{
+	e := &jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
 
-	je := go_jwt.JWTExpiration(172800000)
+	je := jwtkit.JWTExpiration(172800000)
 	jwtString, err := je.GenerateSignedJWTString(
 		e,
 		"unverified Kudaki.id user",
 		"Kudaki.id user service",
 		&map[string]interface{}{
 			"user_uuid": su.Profile.User.Uuid})
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	body := fmt.Sprintf("%s/user/verify?verify_token=%s", os.Getenv("GATEWAY_HOST"), string(jwtString))
 

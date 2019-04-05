@@ -30,7 +30,7 @@ func (dbo DBOperation) Command(stmt string, args ...interface{}) error {
 func (dbo DBOperation) Query(stmt string, args ...interface{}) (*sql.Rows, error) {
 	outStmt, err := DB.Prepare(stmt)
 	defer outStmt.Close()
-	go_error.ErrorHandled(err)
+	errorkit.ErrorHandled(err)
 
 	rows, err := outStmt.Query(args...)
 	if err != nil {

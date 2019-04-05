@@ -73,7 +73,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6d6aa5c0630530ad8e9d569d5dc7945717b2ae6d18e98f4eb22a34ec0752fee3"
+  digest = "1:4068754743763e6da2fe48e6646373e6dec985e3bcb458bc51c6b03f9c813a5b"
   name = "github.com/ilhammhdd/go-toolkit"
   packages = [
     "errorkit",
@@ -81,7 +81,7 @@
     "safekit",
   ]
   pruneopts = "UT"
-  revision = "42fd564a5170889621d015200cc459a31904a9a3"
+  revision = "2e4afd0d87980dd5ed64fb8ca800614bd8f5c78e"
 
 [[projects]]
   branch = "master"
@@ -124,7 +124,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "8e1b8d32e692162a446e97250c5d34f5a52efed6"
+  revision = "38d8ce5564a5b71b2e3a00553993f1b9a7ae852f"
 
 [[projects]]
   branch = "master"
@@ -139,15 +139,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "b630fd6fe46bcfc98f989005d8b8ec1400e60a6e"
+  revision = "eb5bcb51f2a31c7d5141d810b70815c05d9c9146"
 
 [[projects]]
   branch = "master"
-  digest = "1:e18c1645adfe83d66f80d3676040e478895669f9456ca8bafa6a7290656c1b48"
+  digest = "1:cf353a5a9ffb2d6f850e9c773e25388a425a70c270546480427ed069e87b136a"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "81d4e9dc473e5e8c933f2aaeba2a3d81efb9aed2"
+  revision = "4b34438f7a67ee5f45cc6132e2bad873a20324e9"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -186,7 +186,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "f467c93bbac2133ff463e1f93d18d8f9f3f04451"
+  revision = "64821d5d210748c883cd2b809589555ae4654203"
 
 [[projects]]
   digest = "1:c00eb80d7b152379c3e94c38d82b29deca98b1d0f53e4e20362589b7fcbffa07"
