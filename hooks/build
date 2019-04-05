@@ -1,6 +1,7 @@
 #!/bin/bash
 
-docker build -t $IMAGE_NAME . \
+docker build -t $IMAGE_NAME \
+    --network kudaki-docker-net \
     --build-arg DB_NAME=$DB_NAME \
     --build-arg DB_PASSWORD=$DB_PASSWORD \
     --build-arg DB_PATH=$DB_PATH \
@@ -13,4 +14,5 @@ docker build -t $IMAGE_NAME . \
     --build-arg MAIL_HOST=$MAIL_HOST \
     --build-arg MAIL_PASSWORD=$MAIL_PASSWORD \
     --build-arg VERIFICATION_PRIVATE_KEY=$VERIFICATION_PRIVATE_KEY \
-    --build-arg VERIFICATION_PUBLIC_KEY=$VERIFICATION_PUBLIC_KEY
+    --build-arg VERIFICATION_PUBLIC_KEY=$VERIFICATION_PUBLIC_KEY \
+    .
