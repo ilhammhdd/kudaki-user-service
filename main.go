@@ -60,7 +60,7 @@ func main() {
 }
 
 func grpcListener() {
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", os.Getenv("GRPC_ADDRESS"), os.Getenv("GRPC_PORT")))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", os.Getenv("GRPC_PORT")))
 	errorkit.ErrorHandled(err)
 
 	grpcServer := grpc.NewServer()
