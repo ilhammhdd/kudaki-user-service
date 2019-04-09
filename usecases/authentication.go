@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/mail"
@@ -276,15 +275,9 @@ func sendVerificationEmail(su *events.SignupRequested) error {
 	servername := host + ":587"
 	auth := smtp.PlainAuth("", from.Address, password, host)
 
-	crtBytes, _ := ioutil.ReadFile("/certs/gateway.kudaki.id.crt")
-	keyBytes, _ := ioutil.ReadFile("/certs/gateway.kudaki.id.key")
-
-	certs, err := tls.X509KeyPair(crtBytes, keyBytes)
-	errorkit.ErrorHandled(err)
-
 	tlsConf := &tls.Config{
-		ServerName:   host,
-		Certificates: []tls.Certificate{certs},
+		InsecureSkipVerify: true,
+		ServerName:         host,
 	}
 
 	client, err := smtp.Dial(servername)
@@ -314,7 +307,7 @@ func sendVerificationEmail(su *events.SignupRequested) error {
 	client.Quit()
 
 	// auth := smtp.PlainAuth("", from.Address, password, host)
-	// err = smtp.SendMail(host+":465", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
+	// err = smtp.SendMail(host+":587", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
 	return err
 }
 
