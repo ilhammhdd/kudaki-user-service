@@ -275,11 +275,13 @@ func sendVerificationEmail(su *events.SignupRequested) error {
 	servername := host + ":587"
 	auth := smtp.PlainAuth("", from.Address, password, host)
 
-	// tls.LoadX509KeyPair()
+	certs, err := tls.LoadX509KeyPair("/certs/gateway.kudaki.id.crt", "/certs/gateway.kudaki.id.key")
+	errorkit.ErrorHandled(err)
 
 	tlsConf := &tls.Config{
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: false,
 		ServerName:         host,
+		Certificates:       []tls.Certificate{certs},
 	}
 
 	conn, err := tls.Dial("tcp", servername, tlsConf)

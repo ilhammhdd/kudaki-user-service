@@ -22,7 +22,7 @@ import (
 )
 
 func init() {
-	crtBytes, err := ioutil.ReadFile("/certs/gatewa.kudaki.id.crt")
+	crtBytes, err := ioutil.ReadFile("/certs/gateway.kudaki.id.crt")
 	errorkit.ErrorHandled(err)
 
 	log.Println("gateway certs : ", string(crtBytes))
