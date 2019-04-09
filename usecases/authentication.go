@@ -313,7 +313,7 @@ func sendVerificationEmail(su *events.SignupRequested) error {
 	// client.Quit()
 
 	auth := smtp.PlainAuth("", from.Address, password, host)
-	err = smtp.SendMail(host+":25", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
+	err = smtp.SendMail(host+":465", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
 	return err
 }
 
