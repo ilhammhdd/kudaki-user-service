@@ -20,7 +20,7 @@ import (
 )
 
 func init() {
-	if len(os.Args) == 14 {
+	if len(os.Args) == 13 {
 		os.Setenv("KAFKA_BROKERS", os.Args[1])
 		os.Setenv("DB_PATH", os.Args[2])
 		os.Setenv("DB_USERNAME", os.Args[3])
@@ -32,8 +32,7 @@ func init() {
 		os.Setenv("VERIFICATION_PRIVATE_KEY", os.Args[9])
 		os.Setenv("VERIFICATION_PUBLIC_KEY", os.Args[10])
 		os.Setenv("GATEWAY_HOST", os.Args[11])
-		os.Setenv("GRPC_ADDRESS", os.Args[12])
-		os.Setenv("GRPC_PORT", os.Args[13])
+		os.Setenv("GRPC_PORT", os.Args[12])
 	}
 
 	mysql.OpenDB(os.Getenv("DB_PATH"), os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))

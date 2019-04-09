@@ -26,7 +26,6 @@ schema:
   - "./verification_private.pem"
   - "./verification_public.pem"
   - localhost:9001
-  - localhost
   - 9099
   watcher:
     extensions:
