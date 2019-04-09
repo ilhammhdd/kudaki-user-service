@@ -1,10 +1,12 @@
 package usecases
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/mail"
@@ -271,49 +273,48 @@ func sendVerificationEmail(su *events.SignupRequested) error {
 	}
 	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
 
-	// servername := host + ":587"
-	// auth := smtp.PlainAuth("", from.Address, password, host)
-
-	// crtBytes, _ := ioutil.ReadFile("/certs/gateway.kudaki.id.crt")
-	// keyBytes, _ := ioutil.ReadFile("/certs/gateway.kudaki.id.key")
-
-	// certs, err := tls.X509KeyPair(crtBytes, keyBytes)
-	// errorkit.ErrorHandled(err)
-
-	// tlsConf := &tls.Config{
-	// 	InsecureSkipVerify: false,
-	// 	ServerName:         host,
-	// 	Certificates:       []tls.Certificate{certs},
-	// }
-
-	// conn, err := tls.Dial("tcp", servername, tlsConf)
-	// errorkit.ErrorHandled(err)
-
-	// client, err := smtp.NewClient(conn, host)
-	// errorkit.ErrorHandled(err)
-
-	// err = client.Auth(auth)
-	// errorkit.ErrorHandled(err)
-
-	// err = client.Mail(from.Address)
-	// errorkit.ErrorHandled(err)
-
-	// err = client.Rcpt(to.Address)
-	// errorkit.ErrorHandled(err)
-
-	// mailWriter, err := client.Data()
-	// errorkit.ErrorHandled(err)
-
-	// _, err = mailWriter.Write([]byte(message))
-	// errorkit.ErrorHandled(err)
-
-	// err = mailWriter.Close()
-	// errorkit.ErrorHandled(err)
-
-	// client.Quit()
-
+	servername := host + ":587"
 	auth := smtp.PlainAuth("", from.Address, password, host)
-	err = smtp.SendMail(host+":465", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
+
+	crtBytes, _ := ioutil.ReadFile("/certs/gateway.kudaki.id.crt")
+	keyBytes, _ := ioutil.ReadFile("/certs/gateway.kudaki.id.key")
+
+	certs, err := tls.X509KeyPair(crtBytes, keyBytes)
+	errorkit.ErrorHandled(err)
+
+	tlsConf := &tls.Config{
+		ServerName:   host,
+		Certificates: []tls.Certificate{certs},
+	}
+
+	client, err := smtp.Dial(servername)
+	errorkit.ErrorHandled(err)
+
+	err = client.StartTLS(tlsConf)
+	errorkit.ErrorHandled(err)
+
+	err = client.Auth(auth)
+	errorkit.ErrorHandled(err)
+
+	err = client.Mail(from.Address)
+	errorkit.ErrorHandled(err)
+
+	err = client.Rcpt(to.Address)
+	errorkit.ErrorHandled(err)
+
+	mailWriter, err := client.Data()
+	errorkit.ErrorHandled(err)
+
+	_, err = mailWriter.Write([]byte(message))
+	errorkit.ErrorHandled(err)
+
+	err = mailWriter.Close()
+	errorkit.ErrorHandled(err)
+
+	client.Quit()
+
+	// auth := smtp.PlainAuth("", from.Address, password, host)
+	// err = smtp.SendMail(host+":465", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
 	return err
 }
 
