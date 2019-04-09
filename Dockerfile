@@ -42,4 +42,7 @@ ENV GATEWAY_HOST=$GATEWAY_HOST
 
 COPY --from=build-env /go/src/github.com/ilhammhdd/kudaki-user-service/kudaki_user_service_app .
 
+RUN mkdir /certs
+VOLUME /certs
+
 ENTRYPOINT ./kudaki_user_service_app

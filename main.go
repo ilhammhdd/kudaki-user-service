@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net"
 	"os"
 
@@ -20,6 +22,16 @@ import (
 )
 
 func init() {
+	crtBytes, err := ioutil.ReadFile("/certs/gatewa.kudaki.id.crt")
+	errorkit.ErrorHandled(err)
+
+	log.Println("gateway certs : ", string(crtBytes))
+
+	keyBytes, err := ioutil.ReadFile("/certs/gateway.kudaki.id.key")
+	errorkit.ErrorHandled(err)
+
+	log.Println("gateway key : ", string(keyBytes))
+
 	if len(os.Args) == 14 {
 		os.Setenv("KAFKA_BROKERS", os.Args[1])
 		os.Setenv("DB_PATH", os.Args[2])

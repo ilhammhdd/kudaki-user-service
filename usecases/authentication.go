@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"encoding/base64"
 	"errors"
@@ -271,8 +272,44 @@ func sendVerificationEmail(su *events.SignupRequested) error {
 	}
 	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
 
+	servername := host + ":587"
 	auth := smtp.PlainAuth("", from.Address, password, host)
-	err = smtp.SendMail(host+":587", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
+
+	// tls.LoadX509KeyPair()
+
+	tlsConf := &tls.Config{
+		InsecureSkipVerify: true,
+		ServerName:         host,
+	}
+
+	conn, err := tls.Dial("tcp", servername, tlsConf)
+	errorkit.ErrorHandled(err)
+
+	client, err := smtp.NewClient(conn, host)
+	errorkit.ErrorHandled(err)
+
+	err = client.Auth(auth)
+	errorkit.ErrorHandled(err)
+
+	err = client.Mail(from.Address)
+	errorkit.ErrorHandled(err)
+
+	err = client.Rcpt(to.Address)
+	errorkit.ErrorHandled(err)
+
+	mailWriter, err := client.Data()
+	errorkit.ErrorHandled(err)
+
+	_, err = mailWriter.Write([]byte(message))
+	errorkit.ErrorHandled(err)
+
+	err = mailWriter.Close()
+	errorkit.ErrorHandled(err)
+
+	client.Quit()
+
+	// auth := smtp.PlainAuth("", from.Address, password, host)
+	// err = smtp.SendMail(host+":587", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
 	return err
 }
 
