@@ -286,6 +286,9 @@ func sendVerificationEmail(su *events.SignupRequested) error {
 	err = client.StartTLS(tlsConf)
 	errorkit.ErrorHandled(err)
 
+	tlsConnState, ok := client.TLSConnectionState()
+	log.Println("TLS CONN STATE : ", ok, tlsConnState)
+
 	err = client.Auth(auth)
 	errorkit.ErrorHandled(err)
 
