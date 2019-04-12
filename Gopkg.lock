@@ -73,7 +73,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d0b9d104061cc91cad7538d7b1bce92e2187113616946c91e1c8811731556e22"
+  digest = "1:95790033c3f485063ff4e608661272d454c19f733b39ffca682826e96c822395"
   name = "github.com/ilhammhdd/go-toolkit"
   packages = [
     "errorkit",
@@ -81,11 +81,11 @@
     "safekit",
   ]
   pruneopts = "UT"
-  revision = "7e0d09bebc33c74222a3b7acbb5d854eb24cd0c5"
+  revision = "e8e0b4523d2600181fc0d74d30375bde65ac88ab"
 
 [[projects]]
   branch = "master"
-  digest = "1:4784d485fe2e8946401678de9cd4e221af5f0fd673570dbc29de4a20af52001c"
+  digest = "1:b9d47cafd57e81fb81f399f50f6ab0ca8507ce88a4133e7dabd85e26e8228144"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     ".",
@@ -94,7 +94,7 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "a158e055c7b03015e175b04071c5a72e92b049bc"
+  revision = "c77ff1c57901e39293fb7f6504fb377e6feb4713"
 
 [[projects]]
   digest = "1:d886a3c32c8c1a770d07e36340f061d3afc948d065ffc3c9a19b01b34d4f0b65"
@@ -124,7 +124,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "38d8ce5564a5b71b2e3a00553993f1b9a7ae852f"
+  revision = "e7b772b7007a8e7a7e18751d4314dac3579c5b6a"
 
 [[projects]]
   branch = "master"
@@ -143,11 +143,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cf353a5a9ffb2d6f850e9c773e25388a425a70c270546480427ed069e87b136a"
+  digest = "1:e2e51bf73862610e548f3acd292f447b500e53d792aa55260a8cb605dfd8ba09"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "4b34438f7a67ee5f45cc6132e2bad873a20324e9"
+  revision = "0ad05ae3009d6413d3363aa09b350b2ec37daf09"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -189,7 +189,7 @@
   revision = "64821d5d210748c883cd2b809589555ae4654203"
 
 [[projects]]
-  digest = "1:c00eb80d7b152379c3e94c38d82b29deca98b1d0f53e4e20362589b7fcbffa07"
+  digest = "1:31d87f39886fb38a2b6c097ff3b9f985d6960772170d64a68246f7790e955746"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -206,6 +206,7 @@
     "grpclog",
     "internal",
     "internal/backoff",
+    "internal/balancerload",
     "internal/binarylog",
     "internal/channelz",
     "internal/envconfig",
@@ -225,8 +226,8 @@
     "tap",
   ]
   pruneopts = "UT"
-  revision = "3507fb8e1a5ad030303c106fef3a47c9fdad16ad"
-  version = "v1.19.1"
+  revision = "236199dd5f8031d698fb64091194aecd1c3895b2"
+  version = "v1.20.0"
 
 [[projects]]
   digest = "1:6981402aef27693f4b2ec619117abd263fde29f8c1dfac46eef0f35038d37513"

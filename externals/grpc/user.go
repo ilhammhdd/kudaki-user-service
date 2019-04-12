@@ -50,3 +50,8 @@ func (u User) UserAuthentication(ctx context.Context, uar *events.UserAuthentica
 
 	return &ua, err
 }
+
+func (u User) ResetPassword(ctx context.Context, rpp *events.ResetPasswordRequested) (*events.PasswordReseted, error) {
+
+	return nil, nil
+}

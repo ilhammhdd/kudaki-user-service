@@ -67,3 +67,25 @@ ConsLoop:
 		}
 	}
 }
+
+func ResetPassword() {
+	cons := kafka.NewConsumption()
+	cons.Set(events.User_name[int32(events.User_RESET_PASSWORD_REQUESTED)], 0, sarama.OffsetNewest)
+
+	partCons, sig, closeChan := cons.Consume()
+
+ConsLoop:
+	for {
+		select {
+		case msg := <-partCons.Messages():
+			adapters.ResetPassword(mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
+		case consErr := <-partCons.Errors():
+			errorkit.ErrorHandled(consErr.Err)
+			break ConsLoop
+		case <-sig:
+			break ConsLoop
+		}
+	}
+
+	close(closeChan)
+}

@@ -1,15 +1,12 @@
 package usecases
 
 import (
-	"crypto/tls"
 	"database/sql"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"net/mail"
-	"net/smtp"
 	"os"
 	"time"
 
@@ -71,7 +68,32 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventSourcePr
 	}
 
 	safekit.Do(func() {
-		if errorkit.ErrorHandled(sendVerificationEmail(su)) {
+		e := &jwtkit.ECDSA{
+			PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
+			PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
+
+		je := jwtkit.JWTExpiration(172800000)
+		jwtString, err := je.GenerateSignedJWTString(
+			e,
+			"unverified Kudaki.id user",
+			"Kudaki.id user service",
+			&map[string]interface{}{
+				"user_uuid": su.Profile.User.Uuid})
+		errorkit.ErrorHandled(err)
+
+		body := fmt.Sprintf("%s/user/verify?verify_token=%s", os.Getenv("GATEWAY_HOST"), string(jwtString))
+
+		mail := Mail{
+			From: mail.Address{
+				Name:    "Notification Kudaki.id",
+				Address: os.Getenv("MAIL")},
+			To: mail.Address{
+				Name:    su.Profile.FullName,
+				Address: su.Profile.User.Email},
+			Subject: "User account verification",
+			Body:    []byte(body)}
+
+		if errorkit.ErrorHandled(mail.SendWithTLS()) {
 			eventStatus.HttpCode = http.StatusBadRequest
 			eventStatus.Errors = []string{"error occured when sending verification email"}
 			eventStatus.Timestamp = ptypes.TimestampNow()
@@ -155,6 +177,7 @@ func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator, esp Event
 }
 
 func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
+	log.Println("lr :", lr)
 	row, err := dbo.QueryRow("SELECT * FROM users WHERE email=?", lr.User.Email)
 	errorkit.ErrorHandled(err)
 
@@ -175,6 +198,8 @@ func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
 	row, err = dbo.QueryRow("SELECT id FROM unverified_users WHERE user_uuid=?", usr.Uuid)
 	var unverifiedID uint64
 	err = row.Scan(&unverifiedID)
+
+	log.Println("the unverified user id :", unverifiedID)
 
 	if err != sql.ErrNoRows {
 		err = produceLoggedin(esp, lr.Uid, []string{"user unverified"}, nil, http.StatusUnauthorized, &usr)
@@ -204,7 +229,7 @@ func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
 		"verified Kudaki.id user",
 		"Kudaki.id user service",
 		&map[string]interface{}{
-			"user_uuid": lr.User.Uuid})
+			"user_uuid": usr.Uuid})
 
 	errorkit.ErrorHandled(err)
 
@@ -213,6 +238,68 @@ func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
 
 	usr.Token = string(jwtString)
 	produceLoggedin(esp, lr.Uid, nil, []string{"successfully logged in"}, http.StatusOK, &usr)
+}
+
+func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator, esp EventSourceProducer) {
+
+	var oldPasswordHashed []byte
+
+	row, err := dbo.QueryRow("SELECT password FROM users WHERE uuid=?", rpr.Profile.User.Uuid)
+	errorkit.ErrorHandled(err)
+	err = row.Scan(&oldPasswordHashed)
+	errorkit.ErrorHandled(err)
+
+	if compareErr := bcrypt.CompareHashAndPassword(oldPasswordHashed, []byte(rpr.OldPassword)); compareErr != nil {
+		producePasswordReseted(esp, []string{compareErr.Error()}, http.StatusUnauthorized, rpr.Uid)
+		return
+	}
+
+	newPasswordHashed, err := bcrypt.GenerateFromPassword([]byte(rpr.NewPassword), bcrypt.MinCost)
+	errorkit.ErrorHandled(err)
+
+	log.Println("rpr in ResetPassword usecase :", rpr)
+
+	err = dbo.Command("UPDATE users SET password=? WHERE uuid=?", string(newPasswordHashed), rpr.Profile.User.Uuid)
+	if !errorkit.ErrorHandled(err) {
+		mail := Mail{
+			Body: []byte("Your password has changed"),
+			From: mail.Address{
+				Address: os.Getenv("MAIL"),
+				Name:    "Notification kudaki.id"},
+			Subject: "Password changed",
+			To: mail.Address{
+				Address: rpr.Profile.User.Email,
+				Name:    rpr.Profile.FullName}}
+
+		errMail := mail.SendWithTLS()
+
+		if !errorkit.ErrorHandled(errMail) {
+			log.Println("successfully changed password and send email")
+			producePasswordReseted(esp, nil, int32(http.StatusOK), rpr.Uid)
+		} else {
+			producePasswordReseted(esp, []string{errMail.Error()}, int32(http.StatusInternalServerError), rpr.Uid)
+		}
+	} else {
+		producePasswordReseted(esp, []string{err.Error()}, http.StatusInternalServerError, rpr.Uid)
+	}
+
+}
+
+func producePasswordReseted(esp EventSourceProducer, errs []string, httpCode int32, uid string) {
+	esp.Set(events.User_name[int32(events.User_PASSWORD_RESETED)], 0, sarama.OffsetNewest)
+
+	pr := &events.PasswordReseted{
+		EventStatus: &events.Status{
+			Errors:    errs,
+			HttpCode:  httpCode,
+			Timestamp: ptypes.TimestampNow()},
+		Uid: uid,
+	}
+	prBytes, err := proto.Marshal(pr)
+	errorkit.ErrorHandled(err)
+
+	_, _, err = esp.SyncProduce(uid, prBytes)
+	errorkit.ErrorHandled(err)
 }
 
 func produceLoggedin(esp EventSourceProducer, requestUID string, errs []string, msg []string, httpCode int32, usr *user.User) error {
@@ -235,85 +322,6 @@ func produceLoggedin(esp EventSourceProducer, requestUID string, errs []string, 
 	return err
 }
 
-func sendVerificationEmail(su *events.SignupRequested) error {
-	from := mail.Address{
-		Name:    "Notification Kudaki.id",
-		Address: os.Getenv("MAIL")}
-	to := mail.Address{
-		Name:    su.Profile.FullName,
-		Address: su.Profile.User.Email}
-	password := os.Getenv("MAIL_PASSWORD")
-	host := os.Getenv("MAIL_HOST")
-
-	e := &jwtkit.ECDSA{
-		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
-		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
-
-	je := jwtkit.JWTExpiration(172800000)
-	jwtString, err := je.GenerateSignedJWTString(
-		e,
-		"unverified Kudaki.id user",
-		"Kudaki.id user service",
-		&map[string]interface{}{
-			"user_uuid": su.Profile.User.Uuid})
-	errorkit.ErrorHandled(err)
-
-	body := fmt.Sprintf("%s/user/verify?verify_token=%s", os.Getenv("GATEWAY_HOST"), string(jwtString))
-
-	header := make(map[string]string)
-	header["From"] = from.String()
-	header["To"] = to.String()
-	header["Subject"] = "User account verification"
-	header["Content-Transfer-Encoding"] = "base64"
-
-	message := ""
-	for k, v := range header {
-		message += fmt.Sprintf("%s: %s\r\n", k, v)
-	}
-	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
-
-	servername := host + ":587"
-	auth := smtp.PlainAuth("", from.Address, password, host)
-
-	tlsConf := &tls.Config{
-		InsecureSkipVerify: true,
-		ServerName:         host,
-	}
-
-	client, err := smtp.Dial(servername)
-	errorkit.ErrorHandled(err)
-
-	err = client.StartTLS(tlsConf)
-	errorkit.ErrorHandled(err)
-
-	tlsConnState, ok := client.TLSConnectionState()
-	log.Println("TLS CONN STATE : ", ok, tlsConnState)
-
-	err = client.Auth(auth)
-	errorkit.ErrorHandled(err)
-
-	err = client.Mail(from.Address)
-	errorkit.ErrorHandled(err)
-
-	err = client.Rcpt(to.Address)
-	errorkit.ErrorHandled(err)
-
-	mailWriter, err := client.Data()
-	errorkit.ErrorHandled(err)
-
-	_, err = mailWriter.Write([]byte(message))
-	errorkit.ErrorHandled(err)
-
-	err = mailWriter.Close()
-	errorkit.ErrorHandled(err)
-
-	client.Quit()
-
-	// auth := smtp.PlainAuth("", from.Address, password, host)
-	// err = smtp.SendMail(host+":587", auth, from.Address, []string{su.Profile.User.Email}, []byte(message))
-	return err
-}
-
 func createUserAndProfile(su *events.SignupRequested, dbo DBOperator) {
 	dbo.Command(
 		"INSERT INTO users(uuid,email,password,token,role,phone_number,account_type) VALUES(?,?,?,?,?,?,?)",
@@ -330,4 +338,6 @@ func createUserAndProfile(su *events.SignupRequested, dbo DBOperator) {
 		"INSERT INTO unverified_users(user_uuid) VALUES(?)",
 		su.Profile.User.Uuid,
 	)
+
+	dbo.Command("INSERT INTO profiles(user_uuid,uuid,full_name,reputation) VALUES(?,?,?,?)", su.Profile.User.Uuid, uuid.New().String(), su.Profile.FullName, 0)
 }

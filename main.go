@@ -53,6 +53,7 @@ func main() {
 	wp.Work <- eventsourcing.Signup
 	wp.Work <- eventsourcing.VerifyUser
 	wp.Work <- eventsourcing.Login
+	wp.Work <- eventsourcing.ResetPassword
 	wp.Work <- grpcListener
 
 	wp.PoolWG.Wait()
