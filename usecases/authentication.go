@@ -261,24 +261,27 @@ func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator, esp Event
 
 	err = dbo.Command("UPDATE users SET password=? WHERE uuid=?", string(newPasswordHashed), rpr.Profile.User.Uuid)
 	if !errorkit.ErrorHandled(err) {
-		mail := Mail{
-			Body: []byte("Your password has changed"),
-			From: mail.Address{
-				Address: os.Getenv("MAIL"),
-				Name:    "Notification kudaki.id"},
-			Subject: "Password changed",
-			To: mail.Address{
-				Address: rpr.Profile.User.Email,
-				Name:    rpr.Profile.FullName}}
 
-		errMail := mail.SendWithTLS()
+		safekit.Do(func() {
+			mail := Mail{
+				Body: []byte("Your password has changed"),
+				From: mail.Address{
+					Address: os.Getenv("MAIL"),
+					Name:    "Notification kudaki.id"},
+				Subject: "Password changed",
+				To: mail.Address{
+					Address: rpr.Profile.User.Email,
+					Name:    rpr.Profile.FullName}}
 
-		if !errorkit.ErrorHandled(errMail) {
-			log.Println("successfully changed password and send email")
-			producePasswordReseted(esp, nil, int32(http.StatusOK), rpr.Uid)
-		} else {
-			producePasswordReseted(esp, []string{errMail.Error()}, int32(http.StatusInternalServerError), rpr.Uid)
-		}
+			errMail := mail.SendWithTLS()
+			if errorkit.ErrorHandled(errMail) {
+				log.Println("failed to send password changed email")
+			} else {
+				log.Println("successfully send password changed email")
+			}
+		})
+
+		producePasswordReseted(esp, nil, int32(http.StatusOK), rpr.Uid)
 	} else {
 		producePasswordReseted(esp, []string{err.Error()}, http.StatusInternalServerError, rpr.Uid)
 	}
