@@ -13,6 +13,9 @@ func NewDBOperation() DBOperation {
 }
 
 func (dbo DBOperation) Command(stmt string, args ...interface{}) error {
+	err := DB.Ping()
+	errorkit.ErrorHandled(err)
+
 	outStmt, err := DB.Prepare(stmt)
 	defer outStmt.Close()
 	if err != nil {
@@ -28,11 +31,15 @@ func (dbo DBOperation) Command(stmt string, args ...interface{}) error {
 }
 
 func (dbo DBOperation) Query(stmt string, args ...interface{}) (*sql.Rows, error) {
+	err := DB.Ping()
+	errorkit.ErrorHandled(err)
+
 	outStmt, err := DB.Prepare(stmt)
 	defer outStmt.Close()
 	errorkit.ErrorHandled(err)
 
 	rows, err := outStmt.Query(args...)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +48,9 @@ func (dbo DBOperation) Query(stmt string, args ...interface{}) (*sql.Rows, error
 }
 
 func (dbo DBOperation) QueryRow(stmt string, args ...interface{}) (*sql.Row, error) {
+	err := DB.Ping()
+	errorkit.ErrorHandled(err)
+
 	outStmt, err := DB.Prepare(stmt)
 	defer outStmt.Close()
 	if err != nil {
@@ -53,6 +63,9 @@ func (dbo DBOperation) QueryRow(stmt string, args ...interface{}) (*sql.Row, err
 }
 
 func (dbo DBOperation) QueryRowsToMap(stmt string, args ...interface{}) (*[]map[string]interface{}, error) {
+	err := DB.Ping()
+	errorkit.ErrorHandled(err)
+
 	outStmt, err := DB.Prepare(stmt)
 	defer outStmt.Close()
 	if err != nil {
@@ -60,6 +73,7 @@ func (dbo DBOperation) QueryRowsToMap(stmt string, args ...interface{}) (*[]map[
 	}
 
 	rows, err := outStmt.Query(args...)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
