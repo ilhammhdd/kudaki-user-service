@@ -48,6 +48,7 @@ func initJWT() {
 }
 
 func main() {
+	// testing
 	wp := safekit.NewWorkerPool()
 
 	wp.Work <- eventsourcing.Signup
