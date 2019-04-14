@@ -2,8 +2,13 @@ package grpc
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 	"os"
+
+	"github.com/ilhammhdd/go-toolkit/errorkit"
+	"github.com/ilhammhdd/kudaki-entities/user"
+	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
 
 	"github.com/golang/protobuf/ptypes"
 
@@ -54,4 +59,35 @@ func (u User) UserAuthentication(ctx context.Context, uar *events.UserAuthentica
 func (u User) ResetPassword(ctx context.Context, rpp *events.ResetPasswordRequested) (*events.PasswordReseted, error) {
 
 	return nil, nil
+}
+
+func (u User) UserAuthorization(ctx context.Context, uar *events.UserAuthorizationRequested) (*events.UserAuthorized, error) {
+
+	jwt, err := jwtkit.GetJWT(jwtkit.JWTString(uar.Jwt))
+	errorkit.ErrorHandled(err)
+
+	dbo := mysql.NewDBOperation()
+	row, err := dbo.QueryRow("SELECT id FROM users WHERE uuid=? AND role=?", jwt.Payload.Claims["user_uuid"], user.Role_name[int32(uar.Role)])
+	errorkit.ErrorHandled(err)
+
+	var totalUserId int
+
+	if scanErr := row.Scan(&totalUserId); scanErr == sql.ErrNoRows {
+		grpcErr := "user's role not authorized"
+
+		return &events.UserAuthorized{
+			EventStatus: &events.Status{
+				Errors:    []string{grpcErr},
+				HttpCode:  http.StatusUnauthorized,
+				Timestamp: ptypes.TimestampNow()},
+			Uid: uar.Uid,
+		}, nil
+	} else {
+		return &events.UserAuthorized{
+			EventStatus: &events.Status{
+				HttpCode:  http.StatusOK,
+				Timestamp: ptypes.TimestampNow()},
+			Uid: uar.Uid,
+		}, nil
+	}
 }

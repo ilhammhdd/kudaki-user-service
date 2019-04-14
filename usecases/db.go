@@ -10,8 +10,3 @@ type DBOperator interface {
 	QueryRow(string, ...interface{}) (*sql.Row, error)
 	QueryRowsToMap(string, ...interface{}) (*[]map[string]interface{}, error)
 }
-
-// type ProtoSql interface {
-// 	ScanRow(*sql.Row) error
-// 	ScanRows(*sql.Rows) error
-// }
