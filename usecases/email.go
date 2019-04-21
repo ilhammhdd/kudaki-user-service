@@ -66,7 +66,10 @@ func (m Mail) SendWithTLS() error {
 	err = mailWriter.Close()
 	errorkit.ErrorHandled(err)
 
-	defer client.Quit()
+	defer func() {
+		client.Quit()
+		client.Close()
+	}()
 
 	return err
 }

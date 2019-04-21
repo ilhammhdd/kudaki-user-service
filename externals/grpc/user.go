@@ -19,11 +19,11 @@ import (
 
 type User struct{}
 
-func (u User) Signup(context.Context, *events.SignupRequested) (*events.UserVerificationEmailSent, error) {
+func (u User) Signup(context.Context, *events.SignupRequested) (*events.Signedup, error) {
 	return nil, nil
 }
 
-func (u User) VerifyUser(context.Context, *events.VerifyUserRequested) (*events.Signedup, error) {
+func (u User) VerifyUser(context.Context, *events.VerifyUserRequested) (*events.UserVerified, error) {
 	return nil, nil
 }
 

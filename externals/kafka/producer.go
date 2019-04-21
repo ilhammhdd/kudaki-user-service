@@ -10,21 +10,17 @@ import (
 )
 
 type Production struct {
-	topic     string
-	partition int32
-	offset    int64
+	topic string
 }
 
 func NewProduction() *Production { return &Production{} }
 
-func (p *Production) Set(topic string, partition int32, offset int64) {
+func (p *Production) Set(topic string) {
 	p.topic = topic
-	p.partition = partition
-	p.offset = offset
 }
 
-func (p *Production) Get() (string, int32, int64) {
-	return p.topic, p.partition, p.offset
+func (p *Production) Get() (topic string) {
+	return p.topic
 }
 
 func (p *Production) SyncProduce(key string, value []byte) (partition int32, offset int64, err error) {
@@ -34,7 +30,6 @@ func (p *Production) SyncProduce(key string, value []byte) (partition int32, off
 	}
 
 	config := sarama.NewConfig()
-	config.Producer.Partitioner = sarama.NewManualPartitioner
 	config.Producer.Return = rtrn{
 		Successes: true,
 		Errors:    true}
@@ -44,12 +39,11 @@ func (p *Production) SyncProduce(key string, value []byte) (partition int32, off
 
 	defer prod.Close()
 
-	t, part, o := p.Get()
+	topic := p.Get()
 
 	msg := sarama.ProducerMessage{
-		Topic:     t,
-		Offset:    o,
-		Partition: part,
+		Topic:     topic,
+		Offset:    sarama.OffsetNewest,
 		Key:       sarama.StringEncoder(key),
 		Value:     sarama.ByteEncoder(value),
 		Timestamp: time.Now(),

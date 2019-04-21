@@ -10,11 +10,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
-	sarama "gopkg.in/Shopify/sarama.v1"
-
-	"github.com/google/uuid"
 
 	"github.com/golang/protobuf/proto"
 
@@ -29,45 +27,45 @@ import (
 	"github.com/ilhammhdd/go-toolkit/errorkit"
 )
 
-func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventSourceProducer) {
+func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenProducer) {
 	password, err := bcrypt.GenerateFromPassword([]byte(su.Profile.User.Password), bcrypt.MinCost)
 	errorkit.ErrorHandled(err)
 	su.Profile.User.Password = string(password)
 
 	var eventStatus events.Status
-	uves := events.UserVerificationEmailSent{
-		Uid:  uuid.New().String(),
+	sdu := events.Signedup{
+		Uid:  su.Uid,
 		User: su.Profile.User,
 	}
-
 	row, err := dbOperator.QueryRow("SELECT count(id) FROM users WHERE email=?", su.Profile.User.Email)
 	errorkit.ErrorHandled(err)
 
-	var userID uint
-	errorkit.ErrorHandled(row.Scan(&userID))
+	var totalID uint
+	err = row.Scan(&totalID)
 
-	if userID > 0 {
+	if totalID > 0 {
 		eventStatus.HttpCode = http.StatusConflict
 		eventStatus.Errors = []string{"user with the given email already exists"}
 		eventStatus.Timestamp = ptypes.TimestampNow()
-		uves.EventStatus = &eventStatus
-		uvesBytes, err := proto.Marshal(&uves)
+		sdu.EventStatus = &eventStatus
+		uvesBytes, err := proto.Marshal(&sdu)
 		errorkit.ErrorHandled(err)
 
-		esp.Set(entities.Topics_name[int32(entities.Topics_USER_VERIFICATION_EMAIL_SENT)], 0, sarama.OffsetNewest)
+		esp.Set(entities.Topics_name[int32(entities.Topics_SIGNED_UP)])
 		start := time.Now()
-		partition, offset, err := esp.SyncProduce(uves.Uid, uvesBytes)
+		partition, offset, err := esp.SyncProduce(sdu.Uid, uvesBytes)
 		errorkit.ErrorHandled(err)
 
 		duration := time.Since(start)
-		log.Println(duration.Seconds(), " seconds passed after producing")
-
-		log.Println("UserVerificationEmailSent event produced at : ", partition, offset)
-
+		log.Printf("produced Signedup : partition = %d, offset = %d, duration = %f seconds", partition, offset, duration.Seconds())
 		return
 	}
 
 	safekit.Do(func() {
+		var uves events.UserVerificationEmailSent
+		uves.Uid = su.Uid
+		uves.User = su.Profile.User
+
 		e := &jwtkit.ECDSA{
 			PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 			PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
@@ -101,51 +99,45 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventSourcePr
 			uvesBytes, err := proto.Marshal(&uves)
 			errorkit.ErrorHandled(err)
 
-			esp.Set(entities.Topics_name[int32(entities.Topics_USER_VERIFICATION_EMAIL_SENT)], 0, sarama.OffsetNewest)
+			esp.Set(entities.Topics_name[int32(entities.Topics_USER_VERIFICATION_EMAIL_SENT)])
 			start := time.Now()
 			partition, offset, err := esp.SyncProduce(uves.Uid, uvesBytes)
 			errorkit.ErrorHandled(err)
 
 			duration := time.Since(start)
-			log.Println(duration.Seconds(), " seconds passed after producing")
-
-			log.Println("UserVerificationEmailSent event produced at : ", partition, offset)
+			log.Printf("produced UserEmailVerificationSent : partition = %d, offset = %d, time = %f seconds", partition, offset, duration.Seconds())
 		}
 	})
 
 	createUserAndProfile(su, dbOperator)
 
 	eventStatus.HttpCode = http.StatusOK
-	eventStatus.Messages = []string{"successfully sent verfication email"}
+	eventStatus.Messages = []string{"please verify your account by clicking the link we sent to your email"}
 	eventStatus.Timestamp = ptypes.TimestampNow()
-	uves.EventStatus = &eventStatus
-	uvesBytes, err := proto.Marshal(&uves)
+	sdu.EventStatus = &eventStatus
+	uvesBytes, err := proto.Marshal(&sdu)
 	errorkit.ErrorHandled(err)
 
-	log.Println("UserVerificationEmailSent", uves.Uid)
-
-	esp.Set(entities.Topics_name[int32(entities.Topics_USER_VERIFICATION_EMAIL_SENT)], 0, sarama.OffsetNewest)
+	esp.Set(entities.Topics_name[int32(entities.Topics_SIGNED_UP)])
 	start := time.Now()
-	_, _, err = esp.SyncProduce(uves.Uid, uvesBytes)
+	partition, offset, err := esp.SyncProduce(sdu.Uid, uvesBytes)
 	errorkit.ErrorHandled(err)
 	duration := time.Since(start)
-	log.Println(duration.Seconds(), " seconds passed after producing")
+	log.Printf("produced Signedup : partition = %d, offset = %d, time = %f seconds", partition, offset, duration.Seconds())
 }
 
-func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator, esp EventSourceProducer) {
+func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator) *events.Signedup {
 	e := jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
 
-	log.Println("verify jwt: ", jwtkit.JWTString(vu.VerifyUserJwt))
+	signedUp := events.Signedup{
+		EventStatus: new(events.Status),
+		Uid:         vu.Uid,
+	}
 
 	verified, err := jwtkit.VerifyJWTString(&e, jwtkit.JWTString(vu.VerifyUserJwt))
 	errorkit.ErrorHandled(err)
-
-	sdu := events.Signedup{
-		Uid: vu.Uid,
-		EventStatus: &events.Status{
-			Timestamp: ptypes.TimestampNow()}}
 
 	if verified {
 		validated, err := jwtkit.ValidateExpired(jwtkit.JWTString(vu.VerifyUserJwt))
@@ -158,66 +150,63 @@ func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator, esp Event
 			err = dbOperator.Command("DELETE FROM unverified_users WHERE user_uuid=?", jwt.Payload.Claims["user_uuid"])
 			errorkit.ErrorHandled(err)
 
-			sdu.EventStatus.HttpCode = http.StatusOK
-			sdu.EventStatus.Messages = append(sdu.EventStatus.Messages, "user account verified")
+			signedUp.EventStatus.HttpCode = http.StatusOK
+			signedUp.EventStatus.Messages = []string{"user account verified"}
 		} else {
-			sdu.EventStatus.HttpCode = http.StatusUnauthorized
-			sdu.EventStatus.Errors = append(sdu.EventStatus.Messages, errors.New("jwt expired").Error())
+			signedUp.EventStatus.HttpCode = http.StatusUnauthorized
+			signedUp.EventStatus.Errors = []string{errors.New("jwt expired").Error()}
 		}
 	} else {
-		sdu.EventStatus.HttpCode = http.StatusUnauthorized
-		sdu.EventStatus.Errors = append(sdu.EventStatus.Messages, errors.New("user unverified").Error())
+		signedUp.EventStatus.HttpCode = http.StatusUnauthorized
+		signedUp.EventStatus.Errors = []string{errors.New("user unverified").Error()}
 	}
 
-	sduBytes, err := proto.Marshal(&sdu)
-	errorkit.ErrorHandled(err)
-
-	esp.Set(entities.Topics_name[int32(entities.Topics_SIGNED_UP)], 0, sarama.OffsetNewest)
-	esp.SyncProduce(sdu.Uid, sduBytes)
+	return &signedUp
 }
 
-func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
-	log.Println("lr :", lr)
-	row, err := dbo.QueryRow("SELECT * FROM users WHERE email=?", lr.User.Email)
-	errorkit.ErrorHandled(err)
-
+func Login(lr *events.LoginRequested, dbo DBOperator) *events.Loggedin {
 	var usr user.User
 	var usrID uint64
 	var role string
 	var accountType string
+	loggedIn := events.Loggedin{
+		EventStatus: new(events.Status),
+		Uid:         lr.Uid}
+
+	row, err := dbo.QueryRow("SELECT * FROM users WHERE email=?", lr.User.Email)
+	errorkit.ErrorHandled(err)
 
 	err = row.Scan(&usrID, &usr.Uuid, &usr.Email, &usr.Password, &usr.Token, &role, &usr.PhoneNumber, &accountType)
 
 	if err == sql.ErrNoRows {
-		err = produceLoggedin(esp, lr.Uid, []string{"user with the given email doesn't exists"}, nil, http.StatusUnauthorized, &usr)
-		if !errorkit.ErrorHandled(err) {
-			return
-		}
+		loggedIn.EventStatus.Errors = []string{"user with the given email doesn't exists"}
+		loggedIn.EventStatus.HttpCode = http.StatusUnauthorized
+		loggedIn.User = &usr
+
+		return &loggedIn
 	}
 
 	row, err = dbo.QueryRow("SELECT id FROM unverified_users WHERE user_uuid=?", usr.Uuid)
 	var unverifiedID uint64
 	err = row.Scan(&unverifiedID)
 
-	log.Println("the unverified user id :", unverifiedID)
-
 	if err != sql.ErrNoRows {
-		err = produceLoggedin(esp, lr.Uid, []string{"user unverified"}, nil, http.StatusUnauthorized, &usr)
-		if !errorkit.ErrorHandled(err) {
-			return
-		}
+		loggedIn.EventStatus.Errors = []string{"user unverified"}
+		loggedIn.EventStatus.HttpCode = http.StatusUnauthorized
+		loggedIn.User = &usr
+
+		return &loggedIn
 	}
 
 	usr.Role = user.Role(user.Role_value[role])
 	usr.AccountType = user.AccountType(user.AccountType_value[accountType])
 
-	log.Println("user in LoginRequested event : ", usr)
-
 	if err := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(lr.User.Password)); err != nil {
-		err = produceLoggedin(esp, lr.Uid, []string{"wrong password"}, nil, http.StatusUnauthorized, &usr)
-		if !errorkit.ErrorHandled(err) {
-			return
-		}
+		loggedIn.EventStatus.Errors = []string{"wrong password"}
+		loggedIn.EventStatus.HttpCode = http.StatusUnauthorized
+		loggedIn.User = &usr
+
+		return &loggedIn
 	}
 
 	e := &jwtkit.ECDSA{
@@ -237,12 +226,20 @@ func Login(lr *events.LoginRequested, dbo DBOperator, esp EventSourceProducer) {
 	errorkit.ErrorHandled(err)
 
 	usr.Token = string(jwtString)
-	produceLoggedin(esp, lr.Uid, nil, []string{"successfully logged in"}, http.StatusOK, &usr)
+
+	loggedIn.EventStatus.Errors = []string{"successfully logged in"}
+	loggedIn.EventStatus.HttpCode = http.StatusOK
+	loggedIn.User = &usr
+
+	return &loggedIn
 }
 
-func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator, esp EventSourceProducer) {
+func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator) *events.PasswordReseted {
 
 	var oldPasswordHashed []byte
+	passwordReseted := events.PasswordReseted{
+		EventStatus: new(events.Status),
+		Uid:         rpr.Uid}
 
 	row, err := dbo.QueryRow("SELECT password FROM users WHERE uuid=?", rpr.Profile.User.Uuid)
 	errorkit.ErrorHandled(err)
@@ -250,46 +247,43 @@ func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator, esp Event
 	errorkit.ErrorHandled(err)
 
 	if compareErr := bcrypt.CompareHashAndPassword(oldPasswordHashed, []byte(rpr.OldPassword)); compareErr != nil {
-		producePasswordReseted(esp, []string{compareErr.Error()}, http.StatusUnauthorized, rpr.Uid)
-		return
+		passwordReseted.EventStatus.Errors = []string{compareErr.Error()}
+		passwordReseted.EventStatus.HttpCode = http.StatusUnauthorized
+
+		return &passwordReseted
 	}
 
 	newPasswordHashed, err := bcrypt.GenerateFromPassword([]byte(rpr.NewPassword), bcrypt.MinCost)
 	errorkit.ErrorHandled(err)
 
-	log.Println("rpr in ResetPassword usecase :", rpr)
+	dbo.Command("UPDATE users SET password=? WHERE uuid=?", string(newPasswordHashed), rpr.Profile.User.Uuid)
 
-	err = dbo.Command("UPDATE users SET password=? WHERE uuid=?", string(newPasswordHashed), rpr.Profile.User.Uuid)
-	if !errorkit.ErrorHandled(err) {
+	safekit.Do(func() {
+		mail := Mail{
+			Body: []byte("Your password has changed"),
+			From: mail.Address{
+				Address: os.Getenv("MAIL"),
+				Name:    "Notification kudaki.id"},
+			Subject: "Password changed",
+			To: mail.Address{
+				Address: rpr.Profile.User.Email,
+				Name:    rpr.Profile.FullName}}
 
-		safekit.Do(func() {
-			mail := Mail{
-				Body: []byte("Your password has changed"),
-				From: mail.Address{
-					Address: os.Getenv("MAIL"),
-					Name:    "Notification kudaki.id"},
-				Subject: "Password changed",
-				To: mail.Address{
-					Address: rpr.Profile.User.Email,
-					Name:    rpr.Profile.FullName}}
+		errMail := mail.SendWithTLS()
+		if errorkit.ErrorHandled(errMail) {
+			log.Println("failed to send password changed email")
+		} else {
+			log.Println("successfully send password changed email")
+		}
+	})
 
-			errMail := mail.SendWithTLS()
-			if errorkit.ErrorHandled(errMail) {
-				log.Println("failed to send password changed email")
-			} else {
-				log.Println("successfully send password changed email")
-			}
-		})
+	passwordReseted.EventStatus.HttpCode = http.StatusOK
 
-		producePasswordReseted(esp, nil, int32(http.StatusOK), rpr.Uid)
-	} else {
-		producePasswordReseted(esp, []string{err.Error()}, http.StatusInternalServerError, rpr.Uid)
-	}
-
+	return &passwordReseted
 }
 
-func producePasswordReseted(esp EventSourceProducer, errs []string, httpCode int32, uid string) {
-	esp.Set(events.User_name[int32(events.User_PASSWORD_RESETED)], 0, sarama.OffsetNewest)
+func producePasswordReseted(esp EventDrivenProducer, errs []string, httpCode int32, uid string) {
+	esp.Set(events.User_name[int32(events.User_PASSWORD_RESETED)])
 
 	pr := &events.PasswordReseted{
 		EventStatus: &events.Status{
@@ -305,8 +299,8 @@ func producePasswordReseted(esp EventSourceProducer, errs []string, httpCode int
 	errorkit.ErrorHandled(err)
 }
 
-func produceLoggedin(esp EventSourceProducer, requestUID string, errs []string, msg []string, httpCode int32, usr *user.User) error {
-	esp.Set(events.User_name[int32(events.User_LOGGED_IN)], 0, sarama.OffsetNewest)
+func produceLoggedin(esp EventDrivenProducer, requestUID string, errs []string, msg []string, httpCode int32, usr *user.User) error {
+	esp.Set(events.User_name[int32(events.User_LOGGED_IN)])
 
 	loggedin := events.Loggedin{
 		Uid:         requestUID,

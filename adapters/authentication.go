@@ -1,8 +1,6 @@
 package adapters
 
 import (
-	"log"
-
 	"github.com/ilhammhdd/go-toolkit/errorkit"
 
 	"github.com/ilhammhdd/kudaki-entities/events"
@@ -12,46 +10,52 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func Signup(dbOperator usecases.DBOperator, esp usecases.EventSourceProducer, msg []byte) {
+func Signup(dbOperator usecases.DBOperator, esp usecases.EventDrivenProducer, msg []byte) {
 
 	signUp := &events.SignupRequested{}
 
 	err := proto.Unmarshal(msg, signUp)
 	if err == nil {
-		log.Println("It's a SignupRequested event")
 		usecases.Signup(signUp, dbOperator, esp)
 	}
 }
 
-func VerifyUser(dbOperator usecases.DBOperator, esp usecases.EventSourceProducer, msg []byte) {
+func VerifyUser(dbOperator usecases.DBOperator, msg []byte) (key string, value []byte, err error) {
 
-	verifyUser := &events.VerifyUserRequested{}
+	var verifyUser events.VerifyUserRequested
 
-	err := proto.Unmarshal(msg, verifyUser)
-	if err == nil {
-		log.Println("It's a VerifyUserRequested event")
-		usecases.VerifyUser(verifyUser, dbOperator, esp)
+	unmarshalErr := proto.Unmarshal(msg, &verifyUser)
+	if unmarshalErr == nil {
+		signedUp := usecases.VerifyUser(&verifyUser, dbOperator)
+		signedUpBytes, marshalErr := proto.Marshal(signedUp)
+
+		return signedUp.Uid, signedUpBytes, marshalErr
 	}
+
+	return "", nil, unmarshalErr
 }
 
-func Login(dbOperator usecases.DBOperator, esp usecases.EventSourceProducer, msg []byte) {
+func Login(dbOperator usecases.DBOperator, msg []byte) (key string, value []byte, err error) {
 
 	var loginRequested events.LoginRequested
+	unmarshallErr := proto.Unmarshal(msg, &loginRequested)
+	if unmarshallErr == nil {
+		loggedIn := usecases.Login(&loginRequested, dbOperator)
+		loggedInBytes, marshalErr := proto.Marshal(loggedIn)
 
-	err := proto.Unmarshal(msg, &loginRequested)
-	if err == nil {
-		log.Println("it's a LoginRequested event", loginRequested)
-		usecases.Login(&loginRequested, dbOperator, esp)
+		return loggedIn.Uid, loggedInBytes, marshalErr
 	}
+
+	return "", nil, unmarshallErr
 }
 
-func ResetPassword(dbo usecases.DBOperator, esp usecases.EventSourceProducer, msg []byte) {
+func ResetPassword(dbo usecases.DBOperator, msg []byte) (key string, value []byte, err error) {
 	var rpr events.ResetPasswordRequested
 	var fullName string
 	var email string
 
-	if err := proto.Unmarshal(msg, &rpr); err == nil {
-		log.Println("it's a ResetPasswordRequested event", rpr)
+	unmarshalErr := proto.Unmarshal(msg, &rpr)
+	if unmarshalErr == nil {
 
 		row, err := dbo.QueryRow("SELECT full_name FROM profiles WHERE user_uuid=?", rpr.Profile.User.Uuid)
 		errorkit.ErrorHandled(err)
@@ -65,9 +69,11 @@ func ResetPassword(dbo usecases.DBOperator, esp usecases.EventSourceProducer, ms
 
 		rpr.Profile.FullName = fullName
 		rpr.Profile.User.Email = email
+		passwordReseted := usecases.ResetPassword(&rpr, dbo)
 
-		log.Println("profile full_name :", fullName)
-		log.Println("user email :", email)
-		usecases.ResetPassword(&rpr, dbo, esp)
+		passwordResetedBytes, marshalErr := proto.Marshal(passwordReseted)
+		return passwordReseted.Uid, passwordResetedBytes, marshalErr
 	}
+
+	return "", nil, unmarshalErr
 }

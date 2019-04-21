@@ -85,7 +85,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b144a63d66bbdcd00a5522065c1107fd8882bed7b667c17189452113fe07aa8c"
+  digest = "1:e1febf693c908d494625a5c42120a22bcb7c2b5a67e8c7b6dc89e007e781c9bb"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     ".",
@@ -95,18 +95,18 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "6e9549be047123b3a6a99089d01701d00bf7a856"
+  revision = "296d4ddc2b0efb728ee7172e63f89b73f06cabc5"
 
 [[projects]]
-  digest = "1:d886a3c32c8c1a770d07e36340f061d3afc948d065ffc3c9a19b01b34d4f0b65"
+  digest = "1:cf9272ab0a637cb1ffa40e2b6220108d7016a36b3eb357e4b57aacb7a8f725c0"
   name = "github.com/pierrec/lz4"
   packages = [
     ".",
     "internal/xxh32",
   ]
   pruneopts = "UT"
-  revision = "315a67e90e415bcdaff33057da191569bf4d8479"
-  version = "v2.1.1"
+  revision = "9419d2361c8ae111073ffe3337ecc364fb590921"
+  version = "v2.1.2"
 
 [[projects]]
   branch = "master"
@@ -125,11 +125,11 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "88737f569e3a9c7ab309cdc09a07fe7fc87233c3"
+  revision = "df01cb2cc480549d72034218dd98bf97671450ac"
 
 [[projects]]
   branch = "master"
-  digest = "1:ed3a9af4c02aac27f2dbbc7c39e9a5a4a259ac759f8911289f2f2fa284e1e8ae"
+  digest = "1:e275b703ab8e3a4f8cd62893c888867a411f4854436b7d4f3ebf3e9180424847"
   name = "golang.org/x/net"
   packages = [
     "http/httpguts",
@@ -140,15 +140,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "eb5bcb51f2a31c7d5141d810b70815c05d9c9146"
+  revision = "afa5a82059c6356159f699d81beff22a81842231"
 
 [[projects]]
   branch = "master"
-  digest = "1:3e01c69b34e7c3fa4b7a118ca95a6beaecea00f7f4fb701545d83eacd3badb3c"
+  digest = "1:dbe12489f5cb00d492e275a29528c9e336dbe5af75ce366f81c1911faf10733e"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "97732733099d6a942a73b889770774366de963ed"
+  revision = "e8e3143a4f4a00f1fafef0dd82ba78223281b01b"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -187,10 +187,10 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "64821d5d210748c883cd2b809589555ae4654203"
+  revision = "e7d98fc518a78c9f8b5ee77be7b0b317475d89e1"
 
 [[projects]]
-  digest = "1:31d87f39886fb38a2b6c097ff3b9f985d6960772170d64a68246f7790e955746"
+  digest = "1:707c3a5d10ed430ea767d73df122d9eb3dfb6312bbacc9f2e39204390686d1d0"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -227,8 +227,8 @@
     "tap",
   ]
   pruneopts = "UT"
-  revision = "236199dd5f8031d698fb64091194aecd1c3895b2"
-  version = "v1.20.0"
+  revision = "25c4f928eaa6d96443009bd842389fb4fa48664e"
+  version = "v1.20.1"
 
 [[projects]]
   digest = "1:6981402aef27693f4b2ec619117abd263fde29f8c1dfac46eef0f35038d37513"

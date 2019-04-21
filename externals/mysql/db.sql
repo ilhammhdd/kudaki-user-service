@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     `email` VARCHAR(255) UNIQUE,
     `password` VARCHAR(255),
     `token` TEXT,
-    `role` ENUM('USER','KUDAKI_TEAM','ORGANIZER'),
+    `role` ENUM('ADMIN','USER','KUDAKI_TEAM','ORGANIZER'),
     `phone_number` VARCHAR(255),
     `account_type` ENUM('NATIVE','GOOGLE','FACEBOOK')
 );
