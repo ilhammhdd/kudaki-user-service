@@ -5,6 +5,8 @@ import (
 	"net"
 	"os"
 
+	"github.com/ilhammhdd/kudaki-user-service/externals/eventsourcing"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
@@ -18,7 +20,6 @@ import (
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
 
-	"github.com/ilhammhdd/kudaki-user-service/externals/eventsourcing"
 	external_grpc "github.com/ilhammhdd/kudaki-user-service/externals/grpc"
 
 	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"

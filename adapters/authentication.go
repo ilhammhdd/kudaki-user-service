@@ -1,7 +1,12 @@
 package adapters
 
 import (
+	"log"
+
+	"github.com/ilhammhdd/go-toolkit/jwtkit"
+
 	"github.com/ilhammhdd/go-toolkit/errorkit"
+	"gopkg.in/Shopify/sarama.v1"
 
 	"github.com/ilhammhdd/kudaki-entities/events"
 
@@ -35,11 +40,12 @@ func VerifyUser(dbOperator usecases.DBOperator, msg []byte) (key string, value [
 	return "", nil, unmarshalErr
 }
 
-func Login(dbOperator usecases.DBOperator, msg []byte) (key string, value []byte, err error) {
+func Login(dbOperator usecases.DBOperator, msg *sarama.ConsumerMessage) (key string, value []byte, err error) {
 
 	var loginRequested events.LoginRequested
-	unmarshallErr := proto.Unmarshal(msg, &loginRequested)
+	unmarshallErr := proto.Unmarshal(msg.Value, &loginRequested)
 	if unmarshallErr == nil {
+		log.Printf("consumed LoginRequested : key = %s, offset = %v, partition = %v", string(msg.Key), msg.Offset, msg.Partition)
 		loggedIn := usecases.Login(&loginRequested, dbOperator)
 		loggedInBytes, marshalErr := proto.Marshal(loggedIn)
 
@@ -57,12 +63,15 @@ func ResetPassword(dbo usecases.DBOperator, msg []byte) (key string, value []byt
 	unmarshalErr := proto.Unmarshal(msg, &rpr)
 	if unmarshalErr == nil {
 
-		row, err := dbo.QueryRow("SELECT full_name FROM profiles WHERE user_uuid=?", rpr.Profile.User.Uuid)
+		gotJWT, _ := jwtkit.GetJWT(jwtkit.JWTString(rpr.Profile.User.Token))
+		userClaims := gotJWT.Payload.Claims["user"].(map[string]interface{})
+
+		row, err := dbo.QueryRow("SELECT full_name FROM profiles WHERE user_uuid=?", userClaims["uuid"])
 		errorkit.ErrorHandled(err)
 
 		row.Scan(&fullName)
 
-		row, err = dbo.QueryRow("SELECT email FROM users WHERE uuid=?", rpr.Profile.User.Uuid)
+		row, err = dbo.QueryRow("SELECT email FROM users WHERE uuid=?", userClaims["uuid"])
 		errorkit.ErrorHandled(err)
 
 		row.Scan(&email)

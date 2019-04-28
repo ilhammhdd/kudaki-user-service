@@ -11,14 +11,13 @@ import (
 
 	"github.com/ilhammhdd/go-toolkit/errorkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
-	entities "github.com/ilhammhdd/kudaki-entities"
 	"github.com/ilhammhdd/kudaki-user-service/externals/kafka"
 	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
 	sarama "gopkg.in/Shopify/sarama.v1"
 )
 
 func Signup() {
-	topic := entities.Topics_name[int32(entities.Topics_SIGN_UP_REQUESTED)]
+	topic := events.UserTopic_name[int32(events.UserTopic_SIGN_UP_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
@@ -45,7 +44,7 @@ func Signup() {
 }
 
 func VerifyUser() {
-	topic := entities.Topics_name[int32(entities.Topics_VERIFY_USER_REQUESTED)]
+	topic := events.UserTopic_name[int32(events.UserTopic_VERIFY_USER_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
@@ -64,7 +63,7 @@ func VerifyUser() {
 					errorkit.ErrorHandled(err)
 
 					prod := kafka.NewProduction()
-					prod.Set(events.User_name[int32(events.User_SIGNED_UP)])
+					prod.Set(events.UserTopic_name[int32(events.UserTopic_SIGNED_UP)])
 					partition, offset, err := prod.SyncProduce(key, value)
 					errorkit.ErrorHandled(err)
 					log.Printf("produced Signedup: partition = %d, offset = %d, key = %s", partition, offset, key)
@@ -79,7 +78,7 @@ func VerifyUser() {
 }
 
 func Login() {
-	topic := events.User_name[int32(events.User_LOGIN_REQUESTED)]
+	topic := events.UserTopic_name[int32(events.UserTopic_LOGIN_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
@@ -88,17 +87,17 @@ func Login() {
 		signals := make(chan os.Signal)
 		signal.Notify(signals, os.Interrupt)
 
-		prod := kafka.NewProduction()
-		prod.Set(events.User_name[int32(events.User_LOGGED_IN)])
-
 		safekit.Do(func() {
 			<-member.Ready
 			defer close(member.Close)
 			for {
 				select {
 				case msg := <-member.Messages:
-					key, value, err := adapters.Login(mysql.NewDBOperation(), msg.Value)
+					key, value, err := adapters.Login(mysql.NewDBOperation(), msg)
 					errorkit.ErrorHandled(err)
+
+					prod := kafka.NewProduction()
+					prod.Set(events.UserTopic_name[int32(events.UserTopic_LOGGED_IN)])
 
 					partition, offset, err := prod.SyncProduce(key, value)
 					log.Printf("produced Loggedin: partition = %d, offset = %d, key = %s", partition, offset, key)
@@ -113,7 +112,7 @@ func Login() {
 }
 
 func ResetPassword() {
-	topic := events.User_name[int32(events.User_RESET_PASSWORD_REQUESTED)]
+	topic := events.UserTopic_name[int32(events.UserTopic_RESET_PASSWORD_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
@@ -123,7 +122,7 @@ func ResetPassword() {
 		signal.Notify(signals, os.Interrupt)
 
 		prod := kafka.NewProduction()
-		prod.Set(events.User_name[int32(events.User_PASSWORD_RESETED)])
+		prod.Set(events.UserTopic_name[int32(events.UserTopic_PASSWORD_RESETED)])
 
 		safekit.Do(func() {
 			<-member.Ready
@@ -144,4 +143,11 @@ func ResetPassword() {
 			}
 		})
 	}
+}
+
+func RetrieveUser() {
+	groupID := uuid.New().String()
+	topics := []string{"", ""}
+
+	kafka.NewConsumptionMember(groupID, topics, sarama.OffsetNewest)
 }

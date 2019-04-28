@@ -20,7 +20,6 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 
-	entities "github.com/ilhammhdd/kudaki-entities"
 	"github.com/ilhammhdd/kudaki-entities/events"
 	"github.com/ilhammhdd/kudaki-entities/user"
 
@@ -51,7 +50,7 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenPr
 		uvesBytes, err := proto.Marshal(&sdu)
 		errorkit.ErrorHandled(err)
 
-		esp.Set(entities.Topics_name[int32(entities.Topics_SIGNED_UP)])
+		esp.Set(events.UserTopic_name[int32(events.UserTopic_SIGNED_UP)])
 		start := time.Now()
 		partition, offset, err := esp.SyncProduce(sdu.Uid, uvesBytes)
 		errorkit.ErrorHandled(err)
@@ -99,7 +98,7 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenPr
 			uvesBytes, err := proto.Marshal(&uves)
 			errorkit.ErrorHandled(err)
 
-			esp.Set(entities.Topics_name[int32(entities.Topics_USER_VERIFICATION_EMAIL_SENT)])
+			esp.Set(events.UserTopic_name[int32(events.UserTopic_USER_VERIFICATION_EMAIL_SENT)])
 			start := time.Now()
 			partition, offset, err := esp.SyncProduce(uves.Uid, uvesBytes)
 			errorkit.ErrorHandled(err)
@@ -118,7 +117,7 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenPr
 	uvesBytes, err := proto.Marshal(&sdu)
 	errorkit.ErrorHandled(err)
 
-	esp.Set(entities.Topics_name[int32(entities.Topics_SIGNED_UP)])
+	esp.Set(events.UserTopic_name[int32(events.UserTopic_SIGNED_UP)])
 	start := time.Now()
 	partition, offset, err := esp.SyncProduce(sdu.Uid, uvesBytes)
 	errorkit.ErrorHandled(err)
@@ -213,12 +212,34 @@ func Login(lr *events.LoginRequested, dbo DBOperator) *events.Loggedin {
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
 
+	var profile = user.Profile{
+		User: new(user.User),
+	}
+	row, err = dbo.QueryRow("SELECT user_uuid, uuid, full_name, photo, reputation FROM profiles WHERE user_uuid=?", usr.Uuid)
+	errorkit.ErrorHandled(err)
+	err = row.Scan(&profile.User.Uuid, &profile.Uuid, &profile.FullName, &profile.Photo, &profile.Reputation)
+	errorkit.ErrorHandled(err)
+
 	jwtString, err := jwtkit.JWTExpiration(5.256e+9).GenerateSignedJWTString(
 		e,
 		"verified Kudaki.id user",
 		"Kudaki.id user service",
 		&map[string]interface{}{
-			"user_uuid": usr.Uuid})
+			"user": map[string]interface{}{
+				"account_type": accountType,
+				"email":        usr.Email,
+				"phone_number": usr.PhoneNumber,
+				"role":         role,
+				"uuid":         usr.Uuid,
+			},
+			"profile": map[string]interface{}{
+				"user_uuid":  profile.User.Uuid,
+				"uuid":       profile.Uuid,
+				"full_name":  profile.FullName,
+				"photo":      profile.Photo,
+				"reputation": profile.Reputation,
+			},
+		})
 
 	errorkit.ErrorHandled(err)
 
@@ -241,7 +262,7 @@ func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator) *events.P
 		EventStatus: new(events.Status),
 		Uid:         rpr.Uid}
 
-	row, err := dbo.QueryRow("SELECT password FROM users WHERE uuid=?", rpr.Profile.User.Uuid)
+	row, err := dbo.QueryRow("SELECT password FROM users WHERE email=?", rpr.Profile.User.Email)
 	errorkit.ErrorHandled(err)
 	err = row.Scan(&oldPasswordHashed)
 	errorkit.ErrorHandled(err)
@@ -256,7 +277,7 @@ func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator) *events.P
 	newPasswordHashed, err := bcrypt.GenerateFromPassword([]byte(rpr.NewPassword), bcrypt.MinCost)
 	errorkit.ErrorHandled(err)
 
-	dbo.Command("UPDATE users SET password=? WHERE uuid=?", string(newPasswordHashed), rpr.Profile.User.Uuid)
+	dbo.Command("UPDATE users SET password=? WHERE email=?", string(newPasswordHashed), rpr.Profile.User.Email)
 
 	safekit.Do(func() {
 		mail := Mail{
@@ -283,7 +304,7 @@ func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator) *events.P
 }
 
 func producePasswordReseted(esp EventDrivenProducer, errs []string, httpCode int32, uid string) {
-	esp.Set(events.User_name[int32(events.User_PASSWORD_RESETED)])
+	esp.Set(events.UserTopic_name[int32(events.UserTopic_PASSWORD_RESETED)])
 
 	pr := &events.PasswordReseted{
 		EventStatus: &events.Status{
@@ -297,26 +318,6 @@ func producePasswordReseted(esp EventDrivenProducer, errs []string, httpCode int
 
 	_, _, err = esp.SyncProduce(uid, prBytes)
 	errorkit.ErrorHandled(err)
-}
-
-func produceLoggedin(esp EventDrivenProducer, requestUID string, errs []string, msg []string, httpCode int32, usr *user.User) error {
-	esp.Set(events.User_name[int32(events.User_LOGGED_IN)])
-
-	loggedin := events.Loggedin{
-		Uid:         requestUID,
-		EventStatus: new(events.Status)}
-
-	loggedin.EventStatus.Errors = errs
-	loggedin.EventStatus.Messages = msg
-	loggedin.EventStatus.HttpCode = httpCode
-	loggedin.EventStatus.Timestamp = ptypes.TimestampNow()
-	loggedin.User = usr
-	loggedinBytes, err := proto.Marshal(&loggedin)
-	errorkit.ErrorHandled(err)
-
-	_, _, err = esp.SyncProduce(loggedin.Uid, loggedinBytes)
-
-	return err
 }
 
 func createUserAndProfile(su *events.SignupRequested, dbo DBOperator) {
@@ -336,5 +337,10 @@ func createUserAndProfile(su *events.SignupRequested, dbo DBOperator) {
 		su.Profile.User.Uuid,
 	)
 
-	dbo.Command("INSERT INTO profiles(user_uuid,uuid,full_name,reputation) VALUES(?,?,?,?)", su.Profile.User.Uuid, uuid.New().String(), su.Profile.FullName, 0)
+	dbo.Command("INSERT INTO profiles(user_uuid,uuid,full_name,photo,reputation) VALUES(?,?,?,?,?)",
+		su.Profile.User.Uuid,
+		uuid.New().String(),
+		su.Profile.FullName,
+		"",
+		0)
 }
