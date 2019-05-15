@@ -85,10 +85,9 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9a20cffde75a647d3671bc3adda701779bcd698158a584d20d9634fbe675eff5"
+  digest = "1:33df68d52a976b20d1e85dc84d68f575402edd2945866c5c915932ac6b153d82"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
-    ".",
     "events",
     "mountain",
     "rpc",
@@ -96,18 +95,18 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "b42c8e8fc0953c85aa822e028790ceaaeb6cec4e"
+  revision = "133b1ebc1b93e43017c16833b9f1c384ecf3de6d"
 
 [[projects]]
-  digest = "1:cf9272ab0a637cb1ffa40e2b6220108d7016a36b3eb357e4b57aacb7a8f725c0"
+  digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
   name = "github.com/pierrec/lz4"
   packages = [
     ".",
     "internal/xxh32",
   ]
   pruneopts = "UT"
-  revision = "9419d2361c8ae111073ffe3337ecc364fb590921"
-  version = "v2.1.2"
+  revision = "d705d4371bfccdf47f10e45584e896026c83616f"
+  version = "v2.2.3"
 
 [[projects]]
   branch = "master"
@@ -126,11 +125,11 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "a29dc8fdc73485234dbef99ebedb95d2eced08de"
+  revision = "22d7a77e9e5f409e934ed268692e56707cd169e5"
 
 [[projects]]
   branch = "master"
-  digest = "1:ba3cf4e71b3db902c6a219b58be3b6a2cb76bb0626016f5ffa5e3ab261c8cb53"
+  digest = "1:d74f0c0ed416a7a676ef391036a62ecb207b5057636666b3a364397b7b5af3aa"
   name = "golang.org/x/net"
   packages = [
     "http/httpguts",
@@ -141,15 +140,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "4829fb13d2c62012c17688fa7f629f371014946d"
+  revision = "3ec19112720433827bbce8be9342797f5a6aaaf9"
 
 [[projects]]
   branch = "master"
-  digest = "1:157e5158a7f29d6633eed502880463aa43de3c36d451c7051591efd12f455ac8"
+  digest = "1:4fc43e824f7e546353de724c00507b1d9c0bab56344b10c2330a97f166a0fba7"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "a129542de9ae0895210abff9c95d67a1f33cb93d"
+  revision = "3a4b5fb9f71f5874b2374ae059bc0e0bcb52e145"
 
 [[projects]]
   digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
@@ -181,16 +180,16 @@
   name = "google.golang.org/appengine"
   packages = ["cloudsql"]
   pruneopts = "UT"
-  revision = "54a98f90d1c46b7731eb8fb305d2a321c30ef610"
-  version = "v1.5.0"
+  revision = "4c25cacc810c02874000e4f7071286a8e96b2515"
+  version = "v1.6.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:c3076e7defee87de1236f1814beb588f40a75544c60121e6eb38b3b3721783e2"
+  digest = "1:583a0c80f5e3a9343d33aea4aead1e1afcc0043db66fdf961ddd1fe8cd3a4faf"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "357c62f0e4bbba7e6cc403ae09edcf3e2b9028fe"
+  revision = "d00d292a067ce1aa0017b40ca75437b42461fa61"
 
 [[projects]]
   digest = "1:707c3a5d10ed430ea767d73df122d9eb3dfb6312bbacc9f2e39204390686d1d0"
@@ -252,7 +251,6 @@
     "github.com/ilhammhdd/go-toolkit/errorkit",
     "github.com/ilhammhdd/go-toolkit/jwtkit",
     "github.com/ilhammhdd/go-toolkit/safekit",
-    "github.com/ilhammhdd/kudaki-entities",
     "github.com/ilhammhdd/kudaki-entities/events",
     "github.com/ilhammhdd/kudaki-entities/rpc",
     "github.com/ilhammhdd/kudaki-entities/user",

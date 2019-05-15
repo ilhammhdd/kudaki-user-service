@@ -17,11 +17,12 @@ import (
 )
 
 func Signup() {
+	consMemberName := "SignupRequested"
 	topic := events.UserTopic_name[int32(events.UserTopic_SIGN_UP_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
-		consMember := kafka.NewConsumptionMember(groupID, []string{topic}, sarama.OffsetNewest)
+		consMember := kafka.NewConsumptionMember(groupID, []string{topic}, sarama.OffsetNewest, consMemberName, i)
 
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, os.Interrupt)
@@ -44,11 +45,12 @@ func Signup() {
 }
 
 func VerifyUser() {
+	consMemberName := "VerifyUserRequested"
 	topic := events.UserTopic_name[int32(events.UserTopic_VERIFY_USER_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
-		consMember := kafka.NewConsumptionMember(groupID, []string{topic}, sarama.OffsetNewest)
+		consMember := kafka.NewConsumptionMember(groupID, []string{topic}, sarama.OffsetNewest, consMemberName, i)
 
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, os.Interrupt)
@@ -78,11 +80,12 @@ func VerifyUser() {
 }
 
 func Login() {
+	consMemberName := "LoginRequested"
 	topic := events.UserTopic_name[int32(events.UserTopic_LOGIN_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
-		member := kafka.NewConsumptionMember(groupID, []string{topic}, sarama.OffsetNewest)
+		member := kafka.NewConsumptionMember(groupID, []string{topic}, sarama.OffsetNewest, consMemberName, i)
 
 		signals := make(chan os.Signal)
 		signal.Notify(signals, os.Interrupt)
@@ -112,11 +115,12 @@ func Login() {
 }
 
 func ResetPassword() {
+	consMemberName := "ResetPasswordRequested"
 	topic := events.UserTopic_name[int32(events.UserTopic_RESET_PASSWORD_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
-		member := kafka.NewConsumptionMember(groupID, []string{topic}, sarama.OffsetNewest)
+		member := kafka.NewConsumptionMember(groupID, []string{topic}, sarama.OffsetNewest, consMemberName, i)
 
 		signals := make(chan os.Signal)
 		signal.Notify(signals, os.Interrupt)
@@ -146,8 +150,9 @@ func ResetPassword() {
 }
 
 func RetrieveUser() {
-	groupID := uuid.New().String()
-	topics := []string{"", ""}
+	// consMemberName:=""
+	// groupID := uuid.New().String()
+	// topics := []string{"", ""}
 
-	kafka.NewConsumptionMember(groupID, topics, sarama.OffsetNewest)
+	// kafka.NewConsumptionMember(groupID, topics, sarama.OffsetNewest,consMemberName,)
 }
