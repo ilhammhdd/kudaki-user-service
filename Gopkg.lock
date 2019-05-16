@@ -85,7 +85,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:33df68d52a976b20d1e85dc84d68f575402edd2945866c5c915932ac6b153d82"
+  digest = "1:99fc24b9079588f56011422e9528ee48b4ac02dbf5521784d2f1c0d680a6b080"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     "events",
@@ -95,7 +95,7 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "133b1ebc1b93e43017c16833b9f1c384ecf3de6d"
+  revision = "5dfb475995a2f950d9246eb1a145d990cf88f415"
 
 [[projects]]
   digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
@@ -144,11 +144,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4fc43e824f7e546353de724c00507b1d9c0bab56344b10c2330a97f166a0fba7"
+  digest = "1:3851a6d548ec5a808e396408f03a30b8d05ef4426db7ad8688f639b2d88b47bd"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "3a4b5fb9f71f5874b2374ae059bc0e0bcb52e145"
+  revision = "cab07311ab81fc7f180fddf7410b604373b20a00"
 
 [[projects]]
   digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
@@ -189,7 +189,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "d00d292a067ce1aa0017b40ca75437b42461fa61"
+  revision = "995ef27e003f584103ecdd0f98e1a0cc9cbf3395"
 
 [[projects]]
   digest = "1:707c3a5d10ed430ea767d73df122d9eb3dfb6312bbacc9f2e39204390686d1d0"

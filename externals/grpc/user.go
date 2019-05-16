@@ -67,7 +67,7 @@ func (u User) UserAuthorization(ctx context.Context, uar *events.UserAuthorizati
 	errorkit.ErrorHandled(err)
 
 	dbo := mysql.NewDBOperation()
-	row, err := dbo.QueryRow("SELECT id FROM users WHERE uuid=? AND role=?", jwt.Payload.Claims["user_uuid"], user.Role_name[int32(uar.Role)])
+	row, err := dbo.QueryRow("SELECT id FROM users WHERE uuid=? AND role=?", jwt.Payload.Claims["user"].(map[string]interface{})["uuid"], user.Role_name[int32(uar.Role)])
 	errorkit.ErrorHandled(err)
 
 	var totalUserId int
