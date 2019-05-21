@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ilhammhdd/kudaki-entities/events"
@@ -114,9 +115,9 @@ func Login() {
 	}
 }
 
-func ResetPassword() {
-	consMemberName := "ResetPasswordRequested"
-	topic := events.UserTopic_name[int32(events.UserTopic_RESET_PASSWORD_REQUESTED)]
+func ChangePassword() {
+	consMemberName := "ChangePasswordRequested"
+	topic := events.UserTopic_name[int32(events.UserTopic_CHANGE_PASSWORD_REQUESTED)]
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
@@ -126,7 +127,7 @@ func ResetPassword() {
 		signal.Notify(signals, os.Interrupt)
 
 		prod := kafka.NewProduction()
-		prod.Set(events.UserTopic_name[int32(events.UserTopic_PASSWORD_RESETED)])
+		prod.Set(events.UserTopic_name[int32(events.UserTopic_PASSWORD_CHANGED)])
 
 		safekit.Do(func() {
 			<-member.Ready
@@ -134,11 +135,11 @@ func ResetPassword() {
 			for {
 				select {
 				case msg := <-member.Messages:
-					key, value, err := adapters.ResetPassword(mysql.NewDBOperation(), msg.Value)
+					key, value, err := adapters.ChangePassword(mysql.NewDBOperation(), msg.Value)
 					errorkit.ErrorHandled(err)
 
 					partition, offset, err := prod.SyncProduce(key, value)
-					log.Printf("produced PasswordReseted : partition = %d, offset = %d, key = %s", partition, offset, key)
+					log.Printf("produced PasswordChanged : partition = %d, offset = %d, key = %s", partition, offset, key)
 				case errs := <-member.Errs:
 					errorkit.ErrorHandled(errs)
 				case <-signals:
@@ -149,10 +150,114 @@ func ResetPassword() {
 	}
 }
 
-func RetrieveUser() {
-	// consMemberName:=""
-	// groupID := uuid.New().String()
-	// topics := []string{"", ""}
+type SendResetPasswordEmail struct{}
 
-	// kafka.NewConsumptionMember(groupID, topics, sarama.OffsetNewest,consMemberName,)
+func (pr SendResetPasswordEmail) Handle(interface{}) {}
+
+func (pr SendResetPasswordEmail) Work() interface{} {
+
+	groupID := uuid.New().String()
+	topics := []string{events.UserTopic_name[int32(events.UserTopic_SEND_RESET_PASSWORD_EMAIL_REQUESTED)]}
+
+	for i := 0; i < 5; i++ {
+		consMember := kafka.NewConsumptionMember(groupID, topics, sarama.OffsetNewest, "SendResetPasswordEmailRequested", i)
+
+		sig := make(chan os.Signal)
+		signal.Notify(sig, os.Interrupt)
+
+		safekit.Do(func() {
+			<-consMember.Ready
+			defer close(consMember.Close)
+			for {
+				select {
+				case msg := <-consMember.Messages:
+					prAdapter := adapters.SendResetPasswordEmail{
+						Key:       string(msg.Key),
+						Message:   &msg.Value,
+						Offset:    msg.Offset,
+						Partition: msg.Partition,
+					}
+					key, prMsg, err := prAdapter.SendEmail(mysql.NewDBOperation())
+					if err == nil {
+						log.Printf("consumed ResetPasswordRequested : key = %s, offset = %v, partition = %v", string(msg.Key), msg.Offset, msg.Partition)
+						pr.produce(key, &prMsg)
+					}
+				case errs := <-consMember.Errs:
+					errorkit.ErrorHandled(errs)
+				case <-sig:
+					return
+				}
+			}
+		})
+	}
+
+	return nil
+}
+
+func (pr SendResetPasswordEmail) produce(key string, msg *[]byte) {
+	prod := kafka.NewProduction()
+	prod.Set(events.UserTopic_name[int32(events.UserTopic_RESET_PASSWORD_EMAIL_SENT)])
+	start := time.Now()
+	partition, offset, err := prod.SyncProduce(key, *msg)
+	duration := time.Since(start)
+	errorkit.ErrorHandled(err)
+
+	log.Printf("produced ResetPasswordEmailSent : partition = %d, offset = %d, key = %s, duration = %f seconds", partition, offset, key, duration.Seconds())
+}
+
+// Boundary
+
+type ResetPassword struct{}
+
+func (rp ResetPassword) Handle(interface{}) {}
+
+func (rp ResetPassword) Work() interface{} {
+
+	groupID := uuid.New().String()
+	topics := []string{events.UserTopic_name[int32(events.UserTopic_RESET_PASSWORD_REQUESTED)]}
+
+	for i := 0; i < 5; i++ {
+		consMember := kafka.NewConsumptionMember(groupID, topics, sarama.OffsetNewest, "ResetPasswordRequested", i)
+
+		sig := make(chan os.Signal)
+		signal.Notify(sig, os.Interrupt)
+
+		safekit.Do(func() {
+			<-consMember.Ready
+			defer close(consMember.Close)
+			for {
+				select {
+				case msg := <-consMember.Messages:
+					prAdapter := adapters.ResetPassword{
+						Key:       string(msg.Key),
+						Message:   &msg.Value,
+						Offset:    msg.Offset,
+						Partition: msg.Partition,
+					}
+					key, prMsg, err := prAdapter.Reset(mysql.NewDBOperation())
+					if err == nil {
+						log.Printf("consumed ResetPasswordRequested : key = %s, offset = %v, partition = %v", string(msg.Key), msg.Offset, msg.Partition)
+						rp.produce(key, &prMsg)
+					}
+				case errs := <-consMember.Errs:
+					errorkit.ErrorHandled(errs)
+				case <-sig:
+					return
+				}
+			}
+		})
+	}
+
+	return nil
+}
+
+func (rp ResetPassword) produce(key string, msg *[]byte) {
+	prod := kafka.NewProduction()
+	prod.Set(events.UserTopic_name[int32(events.UserTopic_PASSWORD_RESETED)])
+	start := time.Now()
+	partition, offset, err := prod.SyncProduce(key, *msg)
+	duration := time.Since(start)
+	errorkit.ErrorHandled(err)
+
+	log.Printf("produced PasswordReseted : partition = %d, offset = %d, key = %s, duration = %f seconds", partition, offset, key, duration.Seconds())
 }

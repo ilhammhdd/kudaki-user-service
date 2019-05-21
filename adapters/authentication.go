@@ -55,8 +55,8 @@ func Login(dbOperator usecases.DBOperator, msg *sarama.ConsumerMessage) (key str
 	return "", nil, unmarshallErr
 }
 
-func ResetPassword(dbo usecases.DBOperator, msg []byte) (key string, value []byte, err error) {
-	var rpr events.ResetPasswordRequested
+func ChangePassword(dbo usecases.DBOperator, msg []byte) (key string, value []byte, err error) {
+	var rpr events.ChangePasswordRequested
 	var fullName string
 	var email string
 
@@ -78,11 +78,80 @@ func ResetPassword(dbo usecases.DBOperator, msg []byte) (key string, value []byt
 
 		rpr.Profile.FullName = fullName
 		rpr.Profile.User.Email = email
-		passwordReseted := usecases.ResetPassword(&rpr, dbo)
+		passwordChanged := usecases.ChangePassword(&rpr, dbo)
 
-		passwordResetedBytes, marshalErr := proto.Marshal(passwordReseted)
-		return passwordReseted.Uid, passwordResetedBytes, marshalErr
+		passwordChangedBytes, marshalErr := proto.Marshal(passwordChanged)
+		return passwordChanged.Uid, passwordChangedBytes, marshalErr
 	}
 
 	return "", nil, unmarshalErr
+}
+
+type SendResetPasswordEmail struct {
+	Partition int32
+	Offset    int64
+	Key       string
+	Message   *[]byte
+}
+
+func (pr SendResetPasswordEmail) SendEmail(dbo usecases.DBOperator) (key string, msg []byte, err error) {
+
+	var rpr events.SendResetPasswordEmailRequested
+
+	unmarshalErr := proto.Unmarshal(*pr.Message, &rpr)
+	if unmarshalErr == nil {
+
+		prUsecase := usecases.SendResetPasswordEmail{
+			DBO: dbo,
+			In:  &rpr,
+		}
+		rpes := prUsecase.SendEmail()
+		rpesByte, err := proto.Marshal(rpes)
+		errorkit.ErrorHandled(err)
+
+		return rpes.Uid, rpesByte, nil
+	}
+
+	return "", nil, unmarshalErr
+}
+
+type ResetPassword struct {
+	Partition int32
+	Offset    int64
+	Key       string
+	Message   *[]byte
+}
+
+func (rp ResetPassword) Reset(dbo usecases.DBOperator) (string, []byte, error) {
+
+	in, err := rp.parseKafkaMessageToEvent()
+	if err == nil {
+		rpUsecase := usecases.ResetPassword{
+			DBO: dbo,
+			In:  in,
+		}
+		key, val := rp.parseToKafkaMessage(rpUsecase.Reset())
+		return key, val, nil
+	}
+	return "", nil, err
+}
+
+func (rp ResetPassword) parseKafkaMessageToEvent() (*events.ResetPasswordRequested, error) {
+
+	var in events.ResetPasswordRequested
+
+	err := proto.Unmarshal(*rp.Message, &in)
+	if err == nil {
+		return &in, nil
+	}
+
+	return nil, err
+}
+
+func (rp ResetPassword) parseToKafkaMessage(in *events.PasswordReseted) (string, []byte) {
+
+	out, marshalErr := proto.Marshal(in)
+	errorkit.ErrorHandled(marshalErr)
+
+	return in.Uid, out
 }

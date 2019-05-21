@@ -255,10 +255,10 @@ func Login(lr *events.LoginRequested, dbo DBOperator) *events.Loggedin {
 	return &loggedIn
 }
 
-func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator) *events.PasswordReseted {
+func ChangePassword(rpr *events.ChangePasswordRequested, dbo DBOperator) *events.PasswordChanged {
 
 	var oldPasswordHashed []byte
-	passwordReseted := events.PasswordReseted{
+	passwordChanged := events.PasswordChanged{
 		EventStatus: new(events.Status),
 		Uid:         rpr.Uid}
 
@@ -268,10 +268,10 @@ func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator) *events.P
 	errorkit.ErrorHandled(err)
 
 	if compareErr := bcrypt.CompareHashAndPassword(oldPasswordHashed, []byte(rpr.OldPassword)); compareErr != nil {
-		passwordReseted.EventStatus.Errors = []string{compareErr.Error()}
-		passwordReseted.EventStatus.HttpCode = http.StatusUnauthorized
+		passwordChanged.EventStatus.Errors = []string{compareErr.Error()}
+		passwordChanged.EventStatus.HttpCode = http.StatusUnauthorized
 
-		return &passwordReseted
+		return &passwordChanged
 	}
 
 	newPasswordHashed, err := bcrypt.GenerateFromPassword([]byte(rpr.NewPassword), bcrypt.MinCost)
@@ -298,26 +298,9 @@ func ResetPassword(rpr *events.ResetPasswordRequested, dbo DBOperator) *events.P
 		}
 	})
 
-	passwordReseted.EventStatus.HttpCode = http.StatusOK
+	passwordChanged.EventStatus.HttpCode = http.StatusOK
 
-	return &passwordReseted
-}
-
-func producePasswordReseted(esp EventDrivenProducer, errs []string, httpCode int32, uid string) {
-	esp.Set(events.UserTopic_name[int32(events.UserTopic_PASSWORD_RESETED)])
-
-	pr := &events.PasswordReseted{
-		EventStatus: &events.Status{
-			Errors:    errs,
-			HttpCode:  httpCode,
-			Timestamp: ptypes.TimestampNow()},
-		Uid: uid,
-	}
-	prBytes, err := proto.Marshal(pr)
-	errorkit.ErrorHandled(err)
-
-	_, _, err = esp.SyncProduce(uid, prBytes)
-	errorkit.ErrorHandled(err)
+	return &passwordChanged
 }
 
 func createUserAndProfile(su *events.SignupRequested, dbo DBOperator) {
@@ -343,4 +326,166 @@ func createUserAndProfile(su *events.SignupRequested, dbo DBOperator) {
 		su.Profile.FullName,
 		"",
 		0)
+}
+
+type SendResetPasswordEmail struct {
+	In  *events.SendResetPasswordEmailRequested
+	DBO DBOperator
+}
+
+func (pr SendResetPasswordEmail) SendEmail() *events.ResetPasswordEmailSent {
+
+	var rpes events.ResetPasswordEmailSent
+	rpes.Uid = pr.In.Uid
+	rpes.EventStatus = &events.Status{}
+
+	// check if user exists
+	row, err := pr.DBO.QueryRow("SELECT u.uuid,u.email,p.full_name FROM users u JOIN profiles p ON p.user_uuid=u.uuid WHERE email = ?;", pr.In.Email)
+	errorkit.ErrorHandled(err)
+
+	var user user.User
+	var fullName string
+	if row.Scan(&user.Uuid, &user.Email, &fullName) == sql.ErrNoRows {
+		rpes.EventStatus.Errors = []string{"user with the given email not exists"}
+		rpes.EventStatus.HttpCode = http.StatusBadRequest
+		rpes.EventStatus.Timestamp = ptypes.TimestampNow()
+
+		return &rpes
+	}
+	// check if user exists
+
+	// check if key and hashed key for reset password exists, create if not exists
+	row, err = pr.DBO.QueryRow("SELECT * FROM reset_passwords WHERE user_uuid = ?;", user.Uuid)
+	errorkit.ErrorHandled(err)
+
+	type resetPassword struct {
+		ID       uint64
+		userUUID string
+		token    string
+	}
+	var rp resetPassword
+
+	if row.Scan(&rp.ID, &rp.userUUID, &rp.token) == sql.ErrNoRows {
+		e := &jwtkit.ECDSA{
+			PrivateKeyPath: os.Getenv("RESET_PASSWORD_PRIVATE_KEY"),
+			PublicKeyPath:  os.Getenv("RESET_PASSWORD_PUBLIC_KEY")}
+
+		je := jwtkit.JWTExpiration(86400000)
+		jwtString, err := je.GenerateSignedJWTString(
+			e,
+			"Kudaki.id user resetting password",
+			"Kudaki.id user service",
+			&map[string]interface{}{
+				"user_uuid": user.Uuid,
+				"full_name": fullName,
+			})
+		errorkit.ErrorHandled(err)
+
+		err = pr.DBO.Command("INSERT INTO reset_passwords(user_uuid,token) VALUES(?,?);", user.Uuid, string(jwtString))
+		errorkit.ErrorHandled(err)
+
+		rp.userUUID = user.Uuid
+		rp.token = string(jwtString)
+	}
+	// check if key and hashed key for reset password exists, create if not exists
+
+	// send email contains link to reset password
+	// safekit.Do(func() {
+	getResetPasswordPageLink := fmt.Sprintf("%s/user/reset-password?reset_token=%s", os.Getenv("GATEWAY_HOST"), rp.token)
+
+	mail := Mail{
+		From: mail.Address{
+			Address: os.Getenv("MAIL"),
+			Name:    "Kudaki.id account management",
+		},
+		Body:    []byte(getResetPasswordPageLink),
+		Subject: "Reset password user",
+		To: mail.Address{
+			Address: user.Email,
+			Name:    fullName,
+		},
+	}
+
+	err = mail.SendWithTLS()
+	if !errorkit.ErrorHandled(err) {
+		rpes.EventStatus.HttpCode = http.StatusOK
+		rpes.EventStatus.Timestamp = ptypes.TimestampNow()
+	}
+	// })
+	// send email contains link to reset password
+
+	return &rpes
+}
+
+type ResetPassword struct {
+	DBO DBOperator
+	In  *events.ResetPasswordRequested
+}
+
+func (rp ResetPassword) Reset() *events.PasswordReseted {
+
+	// make out event
+	var out events.PasswordReseted
+	out.EventStatus = &events.Status{
+		HttpCode:  http.StatusOK,
+		Timestamp: ptypes.TimestampNow(),
+	}
+	out.Uid = rp.In.Uid
+	// make out event
+
+	// validate and verify reset jwt
+	if ok, err := jwtkit.ValidateExpired(jwtkit.JWTString(rp.In.Token)); !ok {
+		log.Println(err)
+		out.EventStatus.Errors = []string{err.Error()}
+		out.EventStatus.HttpCode = http.StatusUnauthorized
+		out.EventStatus.Timestamp = ptypes.TimestampNow()
+
+		return &out
+	}
+
+	ecdsa := jwtkit.ECDSA{
+		PrivateKeyPath: os.Getenv("RESET_PASSWORD_PRIVATE_KEY"),
+		PublicKeyPath:  os.Getenv("RESET_PASSWORD_PUBLIC_KEY"),
+	}
+	if ok, err := jwtkit.VerifyJWTString(&ecdsa, jwtkit.JWTString(rp.In.Token)); !ok {
+		log.Println(err)
+		out.EventStatus.Errors = []string{err.Error()}
+		out.EventStatus.HttpCode = http.StatusUnauthorized
+		out.EventStatus.Timestamp = ptypes.TimestampNow()
+
+		return &out
+	}
+	// validate and verify reset jwt
+
+	// get user uuid from token
+	jwt, err := jwtkit.GetJWT(jwtkit.JWTString(rp.In.Token))
+	errorkit.ErrorHandled(err)
+
+	userUUID := jwt.Payload.Claims["user_uuid"].(string)
+	// get user uuid from token
+
+	// match given token with the one in db
+	row, err := rp.DBO.QueryRow("SELECT rp.id,u.email FROM reset_passwords rp JOIN users u ON rp.user_uuid=u.uuid WHERE rp.user_uuid=? AND rp.token=?", userUUID, rp.In.Token)
+	errorkit.ErrorHandled(err)
+
+	var resetPasswordID uint64
+	if err = row.Scan(&resetPasswordID, &out.Email); err == sql.ErrNoRows {
+		log.Println(err)
+		out.EventStatus.Errors = []string{"user with this email hasn't requested for password reset"}
+		out.EventStatus.HttpCode = http.StatusNotFound
+		out.EventStatus.Timestamp = ptypes.TimestampNow()
+
+		return &out
+	}
+	// match given token with the one in db
+
+	// update password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(rp.In.NewPassword), bcrypt.MinCost)
+	errorkit.ErrorHandled(err)
+	log.Printf("hashed new password = %s", hashedPassword)
+	err = rp.DBO.Command("UPDATE users SET password=? WHERE uuid=?;", hashedPassword, userUUID)
+	errorkit.ErrorHandled(err)
+	// update password
+
+	return &out
 }

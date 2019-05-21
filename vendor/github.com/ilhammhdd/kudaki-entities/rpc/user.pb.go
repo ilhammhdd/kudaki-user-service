@@ -9,6 +9,8 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	events "github.com/ilhammhdd/kudaki-entities/events"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -26,25 +28,26 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 func init() { proto.RegisterFile("rpc/user.proto", fileDescriptor_27d7a9c2ccec3127) }
 
 var fileDescriptor_27d7a9c2ccec3127 = []byte{
-	// 276 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0x3f, 0x4b, 0xf4, 0x40,
-	0x10, 0xc6, 0x8b, 0x7b, 0xdf, 0x2b, 0x16, 0x54, 0x6e, 0xe4, 0x44, 0x02, 0x16, 0x5a, 0x89, 0x60,
-	0x82, 0x5a, 0x5b, 0x68, 0x61, 0x75, 0x82, 0x44, 0xb4, 0xb0, 0xcb, 0x65, 0xc6, 0xcd, 0x70, 0x66,
-	0x77, 0xdd, 0x3f, 0x8a, 0x7e, 0x0e, 0x3f, 0xb0, 0x64, 0x2f, 0xe7, 0xe6, 0xf4, 0xca, 0x79, 0x7e,
-	0x4f, 0x7e, 0x33, 0x64, 0xc5, 0xb6, 0x35, 0x75, 0x11, 0x1c, 0xd9, 0xdc, 0x58, 0xed, 0x35, 0x8c,
-	0xac, 0xa9, 0xb3, 0x09, 0xbd, 0x91, 0xf2, 0x6e, 0x90, 0x9f, 0x7f, 0x8d, 0xc4, 0xbf, 0x07, 0x47,
-	0x16, 0xce, 0xc4, 0xf8, 0x9e, 0xa5, 0x0a, 0x06, 0xf6, 0xf2, 0x58, 0xcb, 0x97, 0x63, 0x49, 0xaf,
-	0x81, 0x9c, 0x27, 0xcc, 0x76, 0x06, 0x39, 0x61, 0x30, 0x70, 0x29, 0xc4, 0x23, 0x59, 0x7e, 0xfe,
-	0x88, 0x82, 0xac, 0xc7, 0x29, 0x4a, 0x9f, 0xee, 0xf6, 0xac, 0x4b, 0x23, 0x67, 0x42, 0x28, 0xc4,
-	0xff, 0x99, 0x96, 0xac, 0x60, 0xda, 0xd3, 0x38, 0xfd, 0xdd, 0x37, 0xd3, 0x52, 0x12, 0xb2, 0x82,
-	0x52, 0x40, 0x27, 0xb8, 0x0a, 0xbe, 0x21, 0xe5, 0xb9, 0xae, 0x3c, 0x6b, 0x05, 0x47, 0x03, 0xf7,
-	0x3a, 0x4a, 0xaa, 0xfd, 0xcd, 0x1d, 0x42, 0xb8, 0x11, 0x5b, 0x25, 0x39, 0xf2, 0x77, 0x95, 0x73,
-	0xef, 0xda, 0x22, 0x1c, 0xf4, 0xd5, 0xb5, 0x34, 0x99, 0x56, 0x3f, 0x27, 0x11, 0x47, 0x9d, 0xe7,
-	0x56, 0x4c, 0x56, 0x72, 0x6d, 0xf9, 0x73, 0x79, 0xda, 0xe1, 0xaf, 0xb5, 0x3f, 0x24, 0xf9, 0xa6,
-	0x1b, 0x2a, 0x84, 0xd7, 0x27, 0x4f, 0xc7, 0x92, 0x7d, 0x13, 0xe6, 0x79, 0xad, 0xdb, 0x82, 0x5f,
-	0x9a, 0xaa, 0x6d, 0x1b, 0xc4, 0x62, 0x11, 0xb0, 0x5a, 0xf0, 0x69, 0x77, 0xbf, 0x67, 0x72, 0x85,
-	0x35, 0xf5, 0x7c, 0x1c, 0x5f, 0xf2, 0xe2, 0x3b, 0x00, 0x00, 0xff, 0xff, 0xa1, 0xd2, 0xf1, 0x62,
-	0xf3, 0x01, 0x00, 0x00,
+	// 299 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x92, 0x4d, 0x4b, 0x03, 0x31,
+	0x10, 0x86, 0x0f, 0xd5, 0x1e, 0x02, 0x56, 0x3a, 0x52, 0x91, 0x82, 0x82, 0x9e, 0x44, 0x70, 0x17,
+	0xf5, 0xec, 0x41, 0x45, 0xf0, 0x50, 0x41, 0x5a, 0xf4, 0xe0, 0x2d, 0xdd, 0x8c, 0xd9, 0xa1, 0xdd,
+	0x24, 0xe6, 0x43, 0xd1, 0xff, 0xeb, 0xff, 0x90, 0xdd, 0x6e, 0x9b, 0x5d, 0xdd, 0xe3, 0xbc, 0xcf,
+	0x9b, 0x27, 0x61, 0x08, 0x1b, 0x58, 0x93, 0xa5, 0xc1, 0xa1, 0x4d, 0x8c, 0xd5, 0x5e, 0x43, 0xcf,
+	0x9a, 0x6c, 0x3c, 0xc4, 0x0f, 0x54, 0xde, 0x35, 0xf2, 0xcb, 0x9f, 0x1e, 0xdb, 0x7a, 0x76, 0x68,
+	0xe1, 0x82, 0xf5, 0x67, 0x24, 0x55, 0x30, 0xb0, 0x9f, 0x54, 0xb5, 0x64, 0x35, 0x4e, 0xf1, 0x3d,
+	0xa0, 0xf3, 0x28, 0xc6, 0xbb, 0x8d, 0x1c, 0x45, 0x30, 0x70, 0xcd, 0xd8, 0x0b, 0x5a, 0x7a, 0xfb,
+	0xaa, 0x04, 0xe3, 0x1a, 0xc7, 0x28, 0x1e, 0xdd, 0xab, 0x59, 0x99, 0x56, 0x9c, 0x50, 0x40, 0xca,
+	0xb6, 0x27, 0x5a, 0x92, 0x82, 0x51, 0x4d, 0xab, 0xe9, 0xff, 0x7d, 0x13, 0x2d, 0x25, 0x0a, 0x52,
+	0x30, 0x65, 0x50, 0x0a, 0x6e, 0x82, 0xcf, 0x51, 0x79, 0xca, 0xb8, 0x27, 0xad, 0xe0, 0xa4, 0xe1,
+	0x6e, 0xa3, 0xa8, 0x3a, 0xe8, 0xee, 0xa0, 0x80, 0x47, 0x36, 0x5c, 0x87, 0xda, 0xd2, 0xf7, 0x4a,
+	0x79, 0xfc, 0xa7, 0xbe, 0x21, 0xd1, 0x38, 0xea, 0xa8, 0xa0, 0x80, 0x07, 0x36, 0xb8, 0xcb, 0xb9,
+	0x92, 0xf8, 0xc4, 0x9d, 0xfb, 0xd4, 0x56, 0xc0, 0x51, 0x5d, 0x6c, 0xc7, 0x51, 0xb4, 0xde, 0xf6,
+	0x9a, 0xac, 0x7a, 0xe5, 0xc3, 0x76, 0xa6, 0xe8, 0xd0, 0x6f, 0x44, 0x87, 0x75, 0xb1, 0x95, 0x46,
+	0x4f, 0x27, 0xbe, 0x2f, 0x38, 0x2d, 0x67, 0xa8, 0xfc, 0xed, 0xd9, 0xeb, 0xa9, 0x24, 0x9f, 0x87,
+	0x79, 0x92, 0xe9, 0x22, 0xa5, 0x65, 0xce, 0x8b, 0x22, 0x17, 0x22, 0x5d, 0x04, 0xc1, 0x17, 0x74,
+	0x5e, 0x2e, 0xc4, 0x13, 0xba, 0xd4, 0x9a, 0x6c, 0xde, 0xaf, 0xbe, 0xc6, 0xd5, 0x6f, 0x00, 0x00,
+	0x00, 0xff, 0xff, 0x84, 0x6e, 0xfa, 0x3e, 0x44, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -63,8 +66,9 @@ type UserClient interface {
 	VerifyUser(ctx context.Context, in *events.VerifyUserRequested, opts ...grpc.CallOption) (*events.UserVerified, error)
 	Login(ctx context.Context, in *events.LoginRequested, opts ...grpc.CallOption) (*events.Loggedin, error)
 	UserAuthentication(ctx context.Context, in *events.UserAuthenticationRequested, opts ...grpc.CallOption) (*events.UserAuthenticated, error)
-	ResetPassword(ctx context.Context, in *events.ResetPasswordRequested, opts ...grpc.CallOption) (*events.PasswordReseted, error)
 	UserAuthorization(ctx context.Context, in *events.UserAuthorizationRequested, opts ...grpc.CallOption) (*events.UserAuthorized, error)
+	ChangePassword(ctx context.Context, in *events.ChangePasswordRequested, opts ...grpc.CallOption) (*events.PasswordChanged, error)
+	ResetPassword(ctx context.Context, in *events.ResetPasswordRequested, opts ...grpc.CallOption) (*events.ResetPasswordEmailSent, error)
 }
 
 type userClient struct {
@@ -111,18 +115,27 @@ func (c *userClient) UserAuthentication(ctx context.Context, in *events.UserAuth
 	return out, nil
 }
 
-func (c *userClient) ResetPassword(ctx context.Context, in *events.ResetPasswordRequested, opts ...grpc.CallOption) (*events.PasswordReseted, error) {
-	out := new(events.PasswordReseted)
-	err := c.cc.Invoke(ctx, "/rpc.User/ResetPassword", in, out, opts...)
+func (c *userClient) UserAuthorization(ctx context.Context, in *events.UserAuthorizationRequested, opts ...grpc.CallOption) (*events.UserAuthorized, error) {
+	out := new(events.UserAuthorized)
+	err := c.cc.Invoke(ctx, "/rpc.User/UserAuthorization", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userClient) UserAuthorization(ctx context.Context, in *events.UserAuthorizationRequested, opts ...grpc.CallOption) (*events.UserAuthorized, error) {
-	out := new(events.UserAuthorized)
-	err := c.cc.Invoke(ctx, "/rpc.User/UserAuthorization", in, out, opts...)
+func (c *userClient) ChangePassword(ctx context.Context, in *events.ChangePasswordRequested, opts ...grpc.CallOption) (*events.PasswordChanged, error) {
+	out := new(events.PasswordChanged)
+	err := c.cc.Invoke(ctx, "/rpc.User/ChangePassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) ResetPassword(ctx context.Context, in *events.ResetPasswordRequested, opts ...grpc.CallOption) (*events.ResetPasswordEmailSent, error) {
+	out := new(events.ResetPasswordEmailSent)
+	err := c.cc.Invoke(ctx, "/rpc.User/ResetPassword", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +148,35 @@ type UserServer interface {
 	VerifyUser(context.Context, *events.VerifyUserRequested) (*events.UserVerified, error)
 	Login(context.Context, *events.LoginRequested) (*events.Loggedin, error)
 	UserAuthentication(context.Context, *events.UserAuthenticationRequested) (*events.UserAuthenticated, error)
-	ResetPassword(context.Context, *events.ResetPasswordRequested) (*events.PasswordReseted, error)
 	UserAuthorization(context.Context, *events.UserAuthorizationRequested) (*events.UserAuthorized, error)
+	ChangePassword(context.Context, *events.ChangePasswordRequested) (*events.PasswordChanged, error)
+	ResetPassword(context.Context, *events.ResetPasswordRequested) (*events.ResetPasswordEmailSent, error)
+}
+
+// UnimplementedUserServer can be embedded to have forward compatible implementations.
+type UnimplementedUserServer struct {
+}
+
+func (*UnimplementedUserServer) Signup(ctx context.Context, req *events.SignupRequested) (*events.Signedup, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Signup not implemented")
+}
+func (*UnimplementedUserServer) VerifyUser(ctx context.Context, req *events.VerifyUserRequested) (*events.UserVerified, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyUser not implemented")
+}
+func (*UnimplementedUserServer) Login(ctx context.Context, req *events.LoginRequested) (*events.Loggedin, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (*UnimplementedUserServer) UserAuthentication(ctx context.Context, req *events.UserAuthenticationRequested) (*events.UserAuthenticated, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserAuthentication not implemented")
+}
+func (*UnimplementedUserServer) UserAuthorization(ctx context.Context, req *events.UserAuthorizationRequested) (*events.UserAuthorized, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserAuthorization not implemented")
+}
+func (*UnimplementedUserServer) ChangePassword(ctx context.Context, req *events.ChangePasswordRequested) (*events.PasswordChanged, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
+}
+func (*UnimplementedUserServer) ResetPassword(ctx context.Context, req *events.ResetPasswordRequested) (*events.ResetPasswordEmailSent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
 }
 
 func RegisterUserServer(s *grpc.Server, srv UserServer) {
@@ -215,24 +255,6 @@ func _User_UserAuthentication_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _User_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(events.ResetPasswordRequested)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServer).ResetPassword(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/rpc.User/ResetPassword",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).ResetPassword(ctx, req.(*events.ResetPasswordRequested))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _User_UserAuthorization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(events.UserAuthorizationRequested)
 	if err := dec(in); err != nil {
@@ -247,6 +269,42 @@ func _User_UserAuthorization_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServer).UserAuthorization(ctx, req.(*events.UserAuthorizationRequested))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(events.ChangePasswordRequested)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).ChangePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.User/ChangePassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).ChangePassword(ctx, req.(*events.ChangePasswordRequested))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(events.ResetPasswordRequested)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).ResetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.User/ResetPassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).ResetPassword(ctx, req.(*events.ResetPasswordRequested))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -272,12 +330,16 @@ var _User_serviceDesc = grpc.ServiceDesc{
 			Handler:    _User_UserAuthentication_Handler,
 		},
 		{
-			MethodName: "ResetPassword",
-			Handler:    _User_ResetPassword_Handler,
-		},
-		{
 			MethodName: "UserAuthorization",
 			Handler:    _User_UserAuthorization_Handler,
+		},
+		{
+			MethodName: "ChangePassword",
+			Handler:    _User_ChangePassword_Handler,
+		},
+		{
+			MethodName: "ResetPassword",
+			Handler:    _User_ResetPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

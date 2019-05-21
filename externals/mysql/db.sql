@@ -39,3 +39,13 @@ CREATE TABLE IF NOT EXISTS unverified_users(
     REFERENCES users(uuid)
     ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS reset_passwords(
+    `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `user_uuid` VARCHAR(64) UNIQUE,
+    `token` TEXT,
+
+    FOREIGN KEY(user_uuid)
+    REFERENCES users(uuid)
+    ON DELETE CASCADE   
+);

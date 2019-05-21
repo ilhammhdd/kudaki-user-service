@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
-
-	"github.com/ilhammhdd/kudaki-user-service/externals/eventsourcing"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -20,26 +19,18 @@ import (
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
 
+	"github.com/ilhammhdd/kudaki-user-service/externals/eventsourcing"
 	external_grpc "github.com/ilhammhdd/kudaki-user-service/externals/grpc"
 
 	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
 )
 
 func init() {
-	if len(os.Args) == 14 {
-		os.Setenv("KAFKA_BROKERS", os.Args[1])
-		os.Setenv("DB_PATH", os.Args[2])
-		os.Setenv("DB_USERNAME", os.Args[3])
-		os.Setenv("DB_PASSWORD", os.Args[4])
-		os.Setenv("DB_NAME", os.Args[5])
-		os.Setenv("MAIL", os.Args[6])
-		os.Setenv("MAIL_PASSWORD", os.Args[7])
-		os.Setenv("MAIL_HOST", os.Args[8])
-		os.Setenv("VERIFICATION_PRIVATE_KEY", os.Args[9])
-		os.Setenv("VERIFICATION_PUBLIC_KEY", os.Args[10])
-		os.Setenv("GATEWAY_HOST", os.Args[11])
-		os.Setenv("GRPC_PORT", os.Args[12])
-		os.Setenv("KAFKA_VERSION", os.Args[13])
+	if len(os.Args) > 1 {
+		for _, val := range os.Args[1:] {
+			f := strings.Split(val, " ")
+			os.Setenv(string(f[1]), f[2])
+		}
 	}
 
 	mysql.OpenDB(os.Getenv("DB_PATH"), os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
@@ -53,6 +44,11 @@ func initJWT() {
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
 	errorkit.ErrorHandled(jwtkit.GeneratePublicPrivateToPEM(e))
+
+	ecdsa := &jwtkit.ECDSA{
+		PrivateKeyPath: os.Getenv("RESET_PASSWORD_PRIVATE_KEY"),
+		PublicKeyPath:  os.Getenv("RESET_PASSWORD_PUBLIC_KEY")}
+	errorkit.ErrorHandled(jwtkit.GeneratePublicPrivateToPEM(ecdsa))
 }
 
 func initAdmin() {
@@ -104,7 +100,9 @@ func main() {
 	wp.Work <- eventsourcing.Signup
 	wp.Work <- eventsourcing.VerifyUser
 	wp.Work <- eventsourcing.Login
-	wp.Work <- eventsourcing.ResetPassword
+	wp.Work <- eventsourcing.ChangePassword
+	wp.Job <- new(eventsourcing.SendResetPasswordEmail)
+	wp.Job <- new(eventsourcing.ResetPassword)
 	wp.Work <- grpcListener
 
 	wp.PoolWG.Wait()

@@ -19,6 +19,11 @@ import (
 
 type User struct{}
 
+func (u User) ResetPassword(context.Context, *events.ResetPasswordRequested) (*events.ResetPasswordEmailSent, error) {
+
+	return nil, nil
+}
+
 func (u User) Signup(context.Context, *events.SignupRequested) (*events.Signedup, error) {
 	return nil, nil
 }
@@ -56,7 +61,7 @@ func (u User) UserAuthentication(ctx context.Context, uar *events.UserAuthentica
 	return &ua, err
 }
 
-func (u User) ResetPassword(ctx context.Context, rpp *events.ResetPasswordRequested) (*events.PasswordReseted, error) {
+func (u User) ChangePassword(ctx context.Context, rpp *events.ChangePasswordRequested) (*events.PasswordChanged, error) {
 
 	return nil, nil
 }

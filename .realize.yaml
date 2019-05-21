@@ -15,19 +15,21 @@ schema:
     run:
       status: true
   args:
-  - 178.62.107.160:29092
-  - tcp(178.62.107.160:3306)
-  - root
-  - mysqlrocks
-  - kudaki_user
-  - service@kudaki.id
-  - OlahragaOtak2K19!
-  - mail.privateemail.com
-  - "./verification_private.pem"
-  - "./verification_public.pem"
-  - localhost:9001
-  - 9099
-  - 2.1.1
+    - -- KAFKA_BROKERS 178.62.107.160:29092
+    - -- DB_PATH tcp(178.62.107.160:3306)
+    - -- DB_USERNAME root
+    - -- DB_PASSWORD mysqlrocks
+    - -- DB_NAME kudaki_user
+    - -- MAIL service@kudaki.id
+    - -- MAIL_PASSWORD OlahragaOtak2K19!
+    - -- MAIL_HOST mail.privateemail.com
+    - -- VERIFICATION_PRIVATE_KEY ./verification_private.pem
+    - -- VERIFICATION_PUBLIC_KEY ./verification_public.pem
+    - -- GATEWAY_HOST localhost:9001
+    - -- GRPC_PORT 9099
+    - -- KAFKA_VERSION 2.1.1
+    - -- RESET_PASSWORD_PRIVATE_KEY ./reset_password_private.pem
+    - -- RESET_PASSWORD_PUBLIC_KEY ./reset_password_public.pem
   watcher:
     extensions:
     - go
