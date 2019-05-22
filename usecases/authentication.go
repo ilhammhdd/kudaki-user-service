@@ -354,44 +354,41 @@ func (pr SendResetPasswordEmail) SendEmail() *events.ResetPasswordEmailSent {
 	}
 	// check if user exists
 
-	// check if key and hashed key for reset password exists, create if not exists
-	row, err = pr.DBO.QueryRow("SELECT * FROM reset_passwords WHERE user_uuid = ?;", user.Uuid)
+	// generate reset token
+	e := &jwtkit.ECDSA{
+		PrivateKeyPath: os.Getenv("RESET_PASSWORD_PRIVATE_KEY"),
+		PublicKeyPath:  os.Getenv("RESET_PASSWORD_PUBLIC_KEY")}
+
+	je := jwtkit.JWTExpiration(86400000)
+	resetJWT, err := je.GenerateSignedJWTString(
+		e,
+		"Kudaki.id user resetting password",
+		"Kudaki.id user service",
+		&map[string]interface{}{
+			"user_uuid": user.Uuid,
+			"full_name": fullName,
+		})
+	errorkit.ErrorHandled(err)
+	// generate reset token
+
+	// check reset password, insert if not exists update if does
+	row, err = pr.DBO.QueryRow("SELECT id FROM reset_passwords WHERE user_uuid = ?;", user.Uuid)
 	errorkit.ErrorHandled(err)
 
-	type resetPassword struct {
-		ID       uint64
-		userUUID string
-		token    string
-	}
-	var rp resetPassword
+	var resetPasswordID uint64
 
-	if row.Scan(&rp.ID, &rp.userUUID, &rp.token) == sql.ErrNoRows {
-		e := &jwtkit.ECDSA{
-			PrivateKeyPath: os.Getenv("RESET_PASSWORD_PRIVATE_KEY"),
-			PublicKeyPath:  os.Getenv("RESET_PASSWORD_PUBLIC_KEY")}
-
-		je := jwtkit.JWTExpiration(86400000)
-		jwtString, err := je.GenerateSignedJWTString(
-			e,
-			"Kudaki.id user resetting password",
-			"Kudaki.id user service",
-			&map[string]interface{}{
-				"user_uuid": user.Uuid,
-				"full_name": fullName,
-			})
+	if row.Scan(&resetPasswordID) == sql.ErrNoRows {
+		err = pr.DBO.Command("INSERT INTO reset_passwords(user_uuid,token) VALUES(?,?);", user.Uuid, string(resetJWT))
 		errorkit.ErrorHandled(err)
-
-		err = pr.DBO.Command("INSERT INTO reset_passwords(user_uuid,token) VALUES(?,?);", user.Uuid, string(jwtString))
+	} else {
+		err = pr.DBO.Command("UPDATE reset_passwords SET token=? WHERE user_uuid=?;", string(resetJWT), user.Uuid)
 		errorkit.ErrorHandled(err)
-
-		rp.userUUID = user.Uuid
-		rp.token = string(jwtString)
 	}
-	// check if key and hashed key for reset password exists, create if not exists
+	// check reset password, insert if not exists update if does
 
 	// send email contains link to reset password
 	// safekit.Do(func() {
-	getResetPasswordPageLink := fmt.Sprintf("%s/user/reset-password?reset_token=%s", os.Getenv("GATEWAY_HOST"), rp.token)
+	getResetPasswordPageLink := fmt.Sprintf("%s/user/reset-password?reset_token=%s", os.Getenv("GATEWAY_HOST"), resetJWT)
 
 	mail := Mail{
 		From: mail.Address{

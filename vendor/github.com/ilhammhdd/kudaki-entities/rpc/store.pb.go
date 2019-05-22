@@ -28,22 +28,25 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 func init() { proto.RegisterFile("rpc/store.proto", fileDescriptor_4e215feb7542d463) }
 
 var fileDescriptor_4e215feb7542d463 = []byte{
-	// 225 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x91, 0x31, 0x4b, 0xc6, 0x30,
-	0x10, 0x86, 0x87, 0x0f, 0x1d, 0xb2, 0x08, 0x41, 0x1c, 0x82, 0x20, 0x82, 0xa0, 0x08, 0x26, 0xa0,
-	0xbf, 0xe0, 0x13, 0x17, 0xd7, 0x8a, 0x4b, 0x9d, 0xda, 0xdc, 0x69, 0x43, 0x9b, 0x26, 0x26, 0xd7,
-	0xce, 0xfe, 0x74, 0x31, 0xad, 0xd4, 0x4a, 0xca, 0xb7, 0x25, 0x3c, 0xf7, 0xbc, 0xf7, 0xc2, 0xb1,
-	0x93, 0xe0, 0xb5, 0x8a, 0xe4, 0x02, 0x4a, 0x1f, 0x1c, 0x39, 0xbe, 0x0b, 0x5e, 0x0b, 0x8e, 0x23,
-	0xf6, 0x14, 0xff, 0x82, 0xfb, 0xaf, 0x1d, 0x3b, 0x7a, 0xf9, 0xf9, 0xf3, 0x37, 0x26, 0xf6, 0x00,
-	0xe9, 0xfd, 0x1e, 0x5c, 0x4f, 0xcf, 0x84, 0xb6, 0xc0, 0xcf, 0x01, 0x23, 0x21, 0xf0, 0x4b, 0x99,
-	0x64, 0xb9, 0x3d, 0x22, 0xc4, 0x3c, 0xb2, 0xe6, 0x7b, 0x00, 0x04, 0x5e, 0xb2, 0xd3, 0x27, 0xec,
-	0x90, 0x70, 0x0d, 0xf9, 0xd5, 0xec, 0xe4, 0xe0, 0x92, 0x7c, 0x9e, 0x4d, 0x9e, 0x1c, 0xe0, 0x35,
-	0x3b, 0x2b, 0x90, 0x82, 0xc1, 0xf1, 0x7f, 0xfa, 0xf5, 0xec, 0xe5, 0x71, 0x5c, 0x16, 0x5c, 0x64,
-	0x17, 0xc4, 0x5f, 0x2f, 0xf5, 0x7f, 0xf5, 0x50, 0x6d, 0xf6, 0xcf, 0xc1, 0x43, 0xfd, 0x27, 0x07,
-	0x1e, 0x6f, 0xcb, 0x9b, 0x0f, 0x43, 0xcd, 0x50, 0x4b, 0xed, 0xac, 0x32, 0x5d, 0x53, 0x59, 0xdb,
-	0x00, 0xa8, 0x76, 0x80, 0xaa, 0x35, 0x77, 0xd8, 0x93, 0x21, 0x83, 0x51, 0x05, 0xaf, 0xeb, 0xe3,
-	0x74, 0xb5, 0x87, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff, 0x86, 0xac, 0x89, 0x1a, 0xe1, 0x01, 0x00,
-	0x00,
+	// 279 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x92, 0xcd, 0x4a, 0xc3, 0x40,
+	0x14, 0x85, 0x17, 0xfe, 0x2c, 0x46, 0x45, 0xb8, 0x54, 0x17, 0xb1, 0x22, 0x82, 0xa0, 0x08, 0x26,
+	0xa0, 0x2f, 0x60, 0x8b, 0x2e, 0xdc, 0xb6, 0xb8, 0xa9, 0xab, 0x74, 0xee, 0xd5, 0x0c, 0x6d, 0x32,
+	0xe3, 0xcc, 0x4d, 0xdf, 0xd2, 0x77, 0x12, 0x27, 0x09, 0x93, 0x86, 0x29, 0xee, 0x92, 0x9c, 0x7b,
+	0xbe, 0xf3, 0x2d, 0x22, 0x4e, 0xad, 0x91, 0x99, 0x63, 0x6d, 0x29, 0x35, 0x56, 0xb3, 0x86, 0x3d,
+	0x6b, 0x64, 0x02, 0xb4, 0xa1, 0x8a, 0x5d, 0x3f, 0x78, 0xfc, 0xd9, 0x17, 0x07, 0xf3, 0xbf, 0x77,
+	0xf8, 0x10, 0xc9, 0x04, 0xd1, 0x3f, 0x7f, 0x5a, 0x5d, 0xf1, 0x1b, 0x53, 0x39, 0xa3, 0xef, 0x9a,
+	0x1c, 0x13, 0xc2, 0x75, 0xea, 0xcb, 0xe9, 0xee, 0x93, 0x24, 0x69, 0x4f, 0xb6, 0xf3, 0x09, 0x22,
+	0x21, 0x2c, 0xc4, 0xe8, 0x85, 0xd6, 0xc4, 0xb4, 0x1d, 0xc2, 0x4d, 0xdb, 0x89, 0x85, 0x81, 0x3c,
+	0x8e, 0x92, 0x9b, 0x0e, 0xc2, 0x52, 0x9c, 0xcf, 0x88, 0xad, 0xa2, 0xcd, 0x90, 0x7e, 0xdb, 0xf6,
+	0xe2, 0xb1, 0x0b, 0x03, 0x57, 0xd1, 0x01, 0xd7, 0xf5, 0xbc, 0xff, 0xbb, 0xc1, 0x7c, 0xa7, 0x7f,
+	0x2c, 0xfc, 0xcf, 0xbf, 0xe9, 0x20, 0xbc, 0x8a, 0x93, 0x6e, 0xc8, 0xaf, 0xc2, 0xe5, 0x40, 0x7b,
+	0x20, 0x7b, 0xd6, 0xc6, 0x03, 0xc5, 0xa9, 0x38, 0xee, 0x17, 0x60, 0x1c, 0xa1, 0x04, 0xc8, 0xa8,
+	0x07, 0x09, 0x8c, 0x67, 0x71, 0x34, 0xa7, 0xdc, 0xca, 0xa2, 0x11, 0xb9, 0xe8, 0xbc, 0xc3, 0xb7,
+	0x38, 0xc1, 0x35, 0x17, 0x84, 0xd3, 0xfb, 0xc5, 0xdd, 0x97, 0xe2, 0xa2, 0x5e, 0xa6, 0x52, 0x97,
+	0x99, 0x5a, 0x17, 0x79, 0x59, 0x16, 0x88, 0xd9, 0xaa, 0xc6, 0x7c, 0xa5, 0x1e, 0xa8, 0x62, 0xc5,
+	0x8a, 0x5c, 0x66, 0x8d, 0x5c, 0x1e, 0xfa, 0x5f, 0xf0, 0xe9, 0x37, 0x00, 0x00, 0xff, 0xff, 0x33,
+	0x84, 0x5b, 0x80, 0xae, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -62,6 +65,9 @@ type StoreClient interface {
 	DeleteStorefrontItem(ctx context.Context, in *events.DeleteStorefrontItemRequested, opts ...grpc.CallOption) (*events.StorefrontItemDeleted, error)
 	RetrieveStorefrontItem(ctx context.Context, in *events.RetrieveStorefrontItemsRequested, opts ...grpc.CallOption) (*events.StorefrontItemsRetrieved, error)
 	UpdateStorefrontItem(ctx context.Context, in *events.UpdateStorefrontItemRequested, opts ...grpc.CallOption) (*events.StorefrontItemUpdated, error)
+	RetrieveItems(ctx context.Context, in *events.RetrieveItemsRequested, opts ...grpc.CallOption) (*events.ItemsRetrieved, error)
+	RetrieveItem(ctx context.Context, in *events.RetrieveItemRequested, opts ...grpc.CallOption) (*events.ItemRetrieved, error)
+	SearchItems(ctx context.Context, in *events.SearchItemsRequested, opts ...grpc.CallOption) (*events.ItemsSearched, error)
 }
 
 type storeClient struct {
@@ -108,12 +114,42 @@ func (c *storeClient) UpdateStorefrontItem(ctx context.Context, in *events.Updat
 	return out, nil
 }
 
+func (c *storeClient) RetrieveItems(ctx context.Context, in *events.RetrieveItemsRequested, opts ...grpc.CallOption) (*events.ItemsRetrieved, error) {
+	out := new(events.ItemsRetrieved)
+	err := c.cc.Invoke(ctx, "/rpc.Store/RetrieveItems", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storeClient) RetrieveItem(ctx context.Context, in *events.RetrieveItemRequested, opts ...grpc.CallOption) (*events.ItemRetrieved, error) {
+	out := new(events.ItemRetrieved)
+	err := c.cc.Invoke(ctx, "/rpc.Store/RetrieveItem", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storeClient) SearchItems(ctx context.Context, in *events.SearchItemsRequested, opts ...grpc.CallOption) (*events.ItemsSearched, error) {
+	out := new(events.ItemsSearched)
+	err := c.cc.Invoke(ctx, "/rpc.Store/SearchItems", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StoreServer is the server API for Store service.
 type StoreServer interface {
 	AddStorefrontItemRequested(context.Context, *events.AddStorefrontItemRequested) (*events.StorefrontItemAdded, error)
 	DeleteStorefrontItem(context.Context, *events.DeleteStorefrontItemRequested) (*events.StorefrontItemDeleted, error)
 	RetrieveStorefrontItem(context.Context, *events.RetrieveStorefrontItemsRequested) (*events.StorefrontItemsRetrieved, error)
 	UpdateStorefrontItem(context.Context, *events.UpdateStorefrontItemRequested) (*events.StorefrontItemUpdated, error)
+	RetrieveItems(context.Context, *events.RetrieveItemsRequested) (*events.ItemsRetrieved, error)
+	RetrieveItem(context.Context, *events.RetrieveItemRequested) (*events.ItemRetrieved, error)
+	SearchItems(context.Context, *events.SearchItemsRequested) (*events.ItemsSearched, error)
 }
 
 // UnimplementedStoreServer can be embedded to have forward compatible implementations.
@@ -131,6 +167,15 @@ func (*UnimplementedStoreServer) RetrieveStorefrontItem(ctx context.Context, req
 }
 func (*UnimplementedStoreServer) UpdateStorefrontItem(ctx context.Context, req *events.UpdateStorefrontItemRequested) (*events.StorefrontItemUpdated, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStorefrontItem not implemented")
+}
+func (*UnimplementedStoreServer) RetrieveItems(ctx context.Context, req *events.RetrieveItemsRequested) (*events.ItemsRetrieved, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RetrieveItems not implemented")
+}
+func (*UnimplementedStoreServer) RetrieveItem(ctx context.Context, req *events.RetrieveItemRequested) (*events.ItemRetrieved, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RetrieveItem not implemented")
+}
+func (*UnimplementedStoreServer) SearchItems(ctx context.Context, req *events.SearchItemsRequested) (*events.ItemsSearched, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchItems not implemented")
 }
 
 func RegisterStoreServer(s *grpc.Server, srv StoreServer) {
@@ -209,6 +254,60 @@ func _Store_UpdateStorefrontItem_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Store_RetrieveItems_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(events.RetrieveItemsRequested)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoreServer).RetrieveItems(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.Store/RetrieveItems",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoreServer).RetrieveItems(ctx, req.(*events.RetrieveItemsRequested))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Store_RetrieveItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(events.RetrieveItemRequested)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoreServer).RetrieveItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.Store/RetrieveItem",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoreServer).RetrieveItem(ctx, req.(*events.RetrieveItemRequested))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Store_SearchItems_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(events.SearchItemsRequested)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoreServer).SearchItems(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.Store/SearchItems",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoreServer).SearchItems(ctx, req.(*events.SearchItemsRequested))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Store_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "rpc.Store",
 	HandlerType: (*StoreServer)(nil),
@@ -228,6 +327,18 @@ var _Store_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateStorefrontItem",
 			Handler:    _Store_UpdateStorefrontItem_Handler,
+		},
+		{
+			MethodName: "RetrieveItems",
+			Handler:    _Store_RetrieveItems_Handler,
+		},
+		{
+			MethodName: "RetrieveItem",
+			Handler:    _Store_RetrieveItem_Handler,
+		},
+		{
+			MethodName: "SearchItems",
+			Handler:    _Store_SearchItems_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
