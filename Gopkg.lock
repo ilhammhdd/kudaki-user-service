@@ -85,17 +85,18 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6f0ae6d0c54ef6021a5836c86ffffcb1ee64631671236831cd61f588cfe1cdad"
+  digest = "1:f0fbf77bad63d30fb5944e7cc3de89532a090c269615fc285b7e2bc8cfce5186"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     "events",
     "mountain",
+    "rental",
     "rpc",
     "store",
     "user",
   ]
   pruneopts = "UT"
-  revision = "e52bf5a8ce17b068aa3c6573af9cd0b74f4d3b0c"
+  revision = "af855b20adb258aff45ae26c032c6fd3356acde8"
 
 [[projects]]
   digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
@@ -144,11 +145,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dce1d6c001ac752c61f5e255666ed388d78ff2089914f7067c7d6b6ff49e6420"
+  digest = "1:668e8c66b8895d69391429b0f64a72c35603c94f364c94d4e5fab5053d57a0b6"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "0e01d883c5c5e3a1741118a9962f68d71b0a6ed4"
+  revision = "6a60838ec2595395fabc7b2e6c2ae9fb5a87722d"
 
 [[projects]]
   digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
