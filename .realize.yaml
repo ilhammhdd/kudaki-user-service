@@ -30,6 +30,7 @@ schema:
     - -- KAFKA_VERSION 2.1.1
     - -- RESET_PASSWORD_PRIVATE_KEY ./reset_password_private.pem
     - -- RESET_PASSWORD_PUBLIC_KEY ./reset_password_public.pem
+    - -- REDISEARCH_SERVER 178.62.107.160:6379
   watcher:
     extensions:
     - go

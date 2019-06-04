@@ -2,13 +2,17 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"strings"
 
+	"github.com/RediSearch/redisearch-go/redisearch"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
+	"github.com/ilhammhdd/kudaki-entities/kudakiredisearch"
 	"github.com/ilhammhdd/kudaki-entities/user"
 
 	"github.com/ilhammhdd/kudaki-entities/rpc"
@@ -53,16 +57,18 @@ func initJWT() {
 
 func initAdmin() {
 	if adminExists() {
+		log.Println("admin already exists")
 		return
 	}
 
 	password, err := bcrypt.GenerateFromPassword([]byte("OlahragaOtak2K19!"), bcrypt.MinCost)
 	errorkit.ErrorHandled(err)
+	uuid := uuid.New().String()
 
 	dbo := mysql.NewDBOperation()
-	err = dbo.Command(
+	result, err := dbo.Command(
 		"INSERT INTO users(uuid,email,password,token,role,phone_number,account_type) VALUES(?,?,?,?,?,?,?)",
-		uuid.New().String(),
+		uuid,
 		"service@kudaki.id",
 		password,
 		"",
@@ -70,17 +76,38 @@ func initAdmin() {
 		"",
 		user.AccountType_name[int32(user.AccountType_NATIVE)])
 	errorkit.ErrorHandled(err)
+	userlastInsertedID, err := result.LastInsertId()
+
+	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
+	client.CreateIndex(kudakiredisearch.User.Schema())
+	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(uuid).Sanitize(), 1.0)
+	doc.Set("user_id", userlastInsertedID)
+	doc.Set("user_uuid", kudakiredisearch.RedisearchText(uuid).Sanitize())
+	doc.Set("user_email", kudakiredisearch.RedisearchText("service@kudaki.id").Sanitize())
+	doc.Set("user_password", password)
+	doc.Set("user_token", "")
+	doc.Set("user_role", user.Role_ADMIN.String())
+	doc.Set("user_phone_number", "")
+	doc.Set("user_account_type", user.AccountType_NATIVE.String())
+	client.IndexOptions(redisearch.DefaultIndexingOptions, doc)
 }
 
 func adminExists() bool {
 	dbo := mysql.NewDBOperation()
 	row, err := dbo.QueryRow(
 		"SELECT count(id) FROM users WHERE role=?",
-		user.Role_name[int32(user.Role_ADMIN)])
+		user.Role_ADMIN.String())
 	errorkit.ErrorHandled(err)
 
 	var totalIds int
 	row.Scan(&totalIds)
+
+	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
+	client.CreateIndex(kudakiredisearch.User.Schema())
+	rawQuery := fmt.Sprintf("@user_role:{%s}", user.Role_ADMIN.String())
+	query := redisearch.NewQuery(rawQuery)
+	_, _, err = client.Search(query)
+	errorkit.ErrorHandled(err)
 
 	return totalIds == 1
 }

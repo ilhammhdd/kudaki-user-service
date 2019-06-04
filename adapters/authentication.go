@@ -3,6 +3,8 @@ package adapters
 import (
 	"log"
 
+	"github.com/ilhammhdd/kudaki-entities/kudakiredisearch"
+
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
 
 	"github.com/ilhammhdd/go-toolkit/errorkit"
@@ -15,13 +17,13 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func Signup(dbOperator usecases.DBOperator, esp usecases.EventDrivenProducer, msg []byte) {
+func Signup(userClient kudakiredisearch.RedisClient, profileClient kudakiredisearch.RedisClient, dbOperator usecases.DBOperator, esp usecases.EventDrivenProducer, msg []byte) {
 
 	signUp := &events.SignupRequested{}
 
 	err := proto.Unmarshal(msg, signUp)
 	if err == nil {
-		usecases.Signup(signUp, dbOperator, esp)
+		usecases.Signup(userClient, profileClient, signUp, dbOperator, esp)
 	}
 }
 

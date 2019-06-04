@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:7d59bc10a16f13a48238772edd3c1387788bffa6f0b7ab218d6cb36ecbc459ca"
+  name = "github.com/RediSearch/redisearch-go"
+  packages = ["redisearch"]
+  pruneopts = "UT"
+  revision = "43b0ef363ba3a33bb10c4b59b4d66611c595b6c2"
+  version = "v0.1.0"
+
+[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -32,6 +40,17 @@
   pruneopts = "UT"
   revision = "44cc805cf13205b55f69e14bcb69867d1ae92f98"
   version = "v1.1.0"
+
+[[projects]]
+  digest = "1:0594af97b2f4cec6554086eeace6597e20a4b69466eb4ada25adf9f4300dddd2"
+  name = "github.com/garyburd/redigo"
+  packages = [
+    "internal",
+    "redis",
+  ]
+  pruneopts = "UT"
+  revision = "a69d19351219b6dd56f274f96d85a7014a2ec34e"
+  version = "v1.6.0"
 
 [[projects]]
   digest = "1:ec6f9bf5e274c833c911923c9193867f3f18788c461f76f05f62bb1510e0ae65"
@@ -85,10 +104,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f0fbf77bad63d30fb5944e7cc3de89532a090c269615fc285b7e2bc8cfce5186"
+  digest = "1:a3857502d40491c329c6be4e38e7826f91a0888c346ec7b3a4a8e57049d4a2d3"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     "events",
+    "kudakiredisearch",
     "mountain",
     "rental",
     "rpc",
@@ -96,7 +116,7 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "af855b20adb258aff45ae26c032c6fd3356acde8"
+  revision = "66d6b27f458740d6a20e28707c32a3575b69a967"
 
 [[projects]]
   digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
@@ -126,7 +146,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "22d7a77e9e5f409e934ed268692e56707cd169e5"
+  revision = "20be4c3c3ed52bfccdb2d59a412ee1a936d175a7"
 
 [[projects]]
   branch = "master"
@@ -141,15 +161,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "f3200d17e092c607f615320ecaad13d87ad9a2b3"
+  revision = "60506f45cf65977eb3a9c6e30f995f54a721c271"
 
 [[projects]]
   branch = "master"
-  digest = "1:668e8c66b8895d69391429b0f64a72c35603c94f364c94d4e5fab5053d57a0b6"
+  digest = "1:8f5108406bc43c7669b0d67d282e40d05c9f268615fcaf8c1f0f76965aa3f09f"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "6a60838ec2595395fabc7b2e6c2ae9fb5a87722d"
+  revision = "4c4f7f33c9ed00de01c4c741d2177abfcfe19307"
 
 [[projects]]
   digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
@@ -190,10 +210,10 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "c2c4e71fbf6989c3e46a18d65cb88c288f8a3a55"
+  revision = "fb225487d10142b5bcc35abfc6cb9a0609614976"
 
 [[projects]]
-  digest = "1:c69a4c19c4f241e6b75ad65c5e7a1c4eec5705ae504624df4eb6fb659c2df46c"
+  digest = "1:e8800ddadd6bce3bc0c5ffd7bc55dbdddc6e750956c10cc10271cade542fccbe"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -230,8 +250,8 @@
     "tap",
   ]
   pruneopts = "UT"
-  revision = "869adfc8d5a43efc0d05780ad109106f457f51e4"
-  version = "v1.21.0"
+  revision = "501c41df7f472c740d0674ff27122f3f48c80ce7"
+  version = "v1.21.1"
 
 [[projects]]
   digest = "1:6981402aef27693f4b2ec619117abd263fde29f8c1dfac46eef0f35038d37513"
@@ -245,6 +265,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/RediSearch/redisearch-go/redisearch",
     "github.com/go-sql-driver/mysql",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
@@ -253,6 +274,7 @@
     "github.com/ilhammhdd/go-toolkit/jwtkit",
     "github.com/ilhammhdd/go-toolkit/safekit",
     "github.com/ilhammhdd/kudaki-entities/events",
+    "github.com/ilhammhdd/kudaki-entities/kudakiredisearch",
     "github.com/ilhammhdd/kudaki-entities/rpc",
     "github.com/ilhammhdd/kudaki-entities/user",
     "golang.org/x/crypto/bcrypt",

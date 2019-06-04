@@ -10,14 +10,17 @@ import (
 	"os"
 	"time"
 
+	"github.com/ilhammhdd/kudaki-entities/kudakiredisearch"
+
+	"github.com/RediSearch/redisearch-go/redisearch"
+
 	"github.com/google/uuid"
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
 
-	"github.com/golang/protobuf/proto"
-
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 
 	"github.com/ilhammhdd/kudaki-entities/events"
@@ -26,7 +29,7 @@ import (
 	"github.com/ilhammhdd/go-toolkit/errorkit"
 )
 
-func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenProducer) {
+func Signup(userClient kudakiredisearch.RedisClient, profileClient kudakiredisearch.RedisClient, su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenProducer) {
 	password, err := bcrypt.GenerateFromPassword([]byte(su.Profile.User.Password), bcrypt.MinCost)
 	errorkit.ErrorHandled(err)
 	su.Profile.User.Password = string(password)
@@ -36,13 +39,15 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenPr
 		Uid:  su.Uid,
 		User: su.Profile.User,
 	}
-	row, err := dbOperator.QueryRow("SELECT count(id) FROM users WHERE email=?", su.Profile.User.Email)
+
+	row, err := dbOperator.Query("SELECT count(id) FROM users WHERE email = ?;", su.Profile.User.Email)
 	errorkit.ErrorHandled(err)
 
 	var totalID uint
 	err = row.Scan(&totalID)
 
 	if totalID > 0 {
+		log.Printf("existed user ID with the given email : %s", su.Profile.User.Email)
 		eventStatus.HttpCode = http.StatusConflict
 		eventStatus.Errors = []string{"user with the given email already exists"}
 		eventStatus.Timestamp = ptypes.TimestampNow()
@@ -108,7 +113,7 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenPr
 		}
 	})
 
-	createUserAndProfile(su, dbOperator)
+	createUserAndProfile(userClient, profileClient, su, dbOperator)
 
 	eventStatus.HttpCode = http.StatusOK
 	eventStatus.Messages = []string{"please verify your account by clicking the link we sent to your email"}
@@ -123,6 +128,83 @@ func Signup(su *events.SignupRequested, dbOperator DBOperator, esp EventDrivenPr
 	errorkit.ErrorHandled(err)
 	duration := time.Since(start)
 	log.Printf("produced Signedup : partition = %d, offset = %d, time = %f seconds", partition, offset, duration.Seconds())
+}
+
+func createUserAndProfile(userClient kudakiredisearch.RedisClient, profileClient kudakiredisearch.RedisClient, su *events.SignupRequested, dbo DBOperator) {
+	userResult, err := dbo.Command(
+		"INSERT INTO users(uuid,email,password,token,role,phone_number,account_type) VALUES(?,?,?,?,?,?,?)",
+		su.Profile.User.Uuid,
+		su.Profile.User.Email,
+		su.Profile.User.Password,
+		"",
+		user.Role_name[int32(su.Profile.User.Role)],
+		su.Profile.User.PhoneNumber,
+		user.AccountType_name[int32(su.Profile.User.AccountType)],
+	)
+	errorkit.ErrorHandled(err)
+
+	dbo.Command(
+		"INSERT INTO unverified_users(user_uuid) VALUES(?)",
+		su.Profile.User.Uuid,
+	)
+
+	profileResult, err := dbo.Command("INSERT INTO profiles(user_uuid,uuid,full_name,photo,reputation) VALUES(?,?,?,?,?)",
+		su.Profile.User.Uuid,
+		uuid.New().String(),
+		su.Profile.FullName,
+		"",
+		0)
+	errorkit.ErrorHandled(err)
+
+	log.Println("user, unverified user, and profile inserted")
+
+	indexingProp := indexUserProfileProp{
+		userInsertResult:    userResult,
+		profileInsertResult: profileResult,
+		userClient:          userClient,
+		profileClient:       profileClient,
+	}
+	indexUserAndProfile(indexingProp, su)
+}
+
+type indexUserProfileProp struct {
+	userClient          kudakiredisearch.RedisClient
+	profileClient       kudakiredisearch.RedisClient
+	userInsertResult    sql.Result
+	profileInsertResult sql.Result
+}
+
+func indexUserAndProfile(i indexUserProfileProp, su *events.SignupRequested) {
+	rsUserClient := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), i.userClient.Name())
+	rsUserClient.CreateIndex(i.userClient.Schema())
+
+	userlastInsertedID, err := i.userInsertResult.LastInsertId()
+	errorkit.ErrorHandled(err)
+
+	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(su.Profile.User.Uuid).Sanitize(), 1.0)
+	doc.Set("user_id", userlastInsertedID)
+	doc.Set("user_uuid", kudakiredisearch.RedisearchText(su.Profile.User.Uuid).Sanitize())
+	doc.Set("user_email", su.Profile.User.Email)
+	doc.Set("user_password", su.Profile.User.Password)
+	doc.Set("user_token", "")
+	doc.Set("user_role", su.Profile.User.Role.String())
+	doc.Set("user_phone_number", su.Profile.User.PhoneNumber)
+	doc.Set("user_account_type", su.Profile.User.AccountType.String())
+	rsUserClient.IndexOptions(redisearch.DefaultIndexingOptions, doc)
+
+	rsProfileClient := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), i.profileClient.Name())
+	rsProfileClient.CreateIndex(i.profileClient.Schema())
+
+	profilelastInsertedID, err := i.profileInsertResult.LastInsertId()
+	errorkit.ErrorHandled(err)
+
+	doc = redisearch.NewDocument(kudakiredisearch.RedisearchText(su.Profile.Uuid).Sanitize(), 1.0)
+	doc.Set("profile_id", profilelastInsertedID)
+	doc.Set("profile_uuid", kudakiredisearch.RedisearchText(uuid.New().String()).Sanitize())
+	doc.Set("profile_full_name", su.Profile.FullName)
+	doc.Set("profile_photo", su.Profile.Photo)
+	doc.Set("profile_reputation", 0.0)
+	rsProfileClient.IndexOptions(redisearch.DefaultIndexingOptions, doc)
 }
 
 func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator) *events.Signedup {
@@ -146,7 +228,7 @@ func VerifyUser(vu *events.VerifyUserRequested, dbOperator DBOperator) *events.S
 			jwt, err := jwtkit.GetJWT(jwtkit.JWTString(vu.VerifyUserJwt))
 			errorkit.ErrorHandled(err)
 
-			err = dbOperator.Command("DELETE FROM unverified_users WHERE user_uuid=?", jwt.Payload.Claims["user_uuid"])
+			_, err = dbOperator.Command("DELETE FROM unverified_users WHERE user_uuid=?", jwt.Payload.Claims["user_uuid"])
 			errorkit.ErrorHandled(err)
 
 			signedUp.EventStatus.HttpCode = http.StatusOK
@@ -243,7 +325,7 @@ func Login(lr *events.LoginRequested, dbo DBOperator) *events.Loggedin {
 
 	errorkit.ErrorHandled(err)
 
-	err = dbo.Command("UPDATE users SET token=? WHERE uuid=?", string(jwtString), usr.Uuid)
+	_, err = dbo.Command("UPDATE users SET token=? WHERE uuid=?", string(jwtString), usr.Uuid)
 	errorkit.ErrorHandled(err)
 
 	usr.Token = string(jwtString)
@@ -303,31 +385,6 @@ func ChangePassword(rpr *events.ChangePasswordRequested, dbo DBOperator) *events
 	return &passwordChanged
 }
 
-func createUserAndProfile(su *events.SignupRequested, dbo DBOperator) {
-	dbo.Command(
-		"INSERT INTO users(uuid,email,password,token,role,phone_number,account_type) VALUES(?,?,?,?,?,?,?)",
-		su.Profile.User.Uuid,
-		su.Profile.User.Email,
-		su.Profile.User.Password,
-		"",
-		user.Role_name[int32(su.Profile.User.Role)],
-		su.Profile.User.PhoneNumber,
-		user.AccountType_name[int32(su.Profile.User.AccountType)],
-	)
-
-	dbo.Command(
-		"INSERT INTO unverified_users(user_uuid) VALUES(?)",
-		su.Profile.User.Uuid,
-	)
-
-	dbo.Command("INSERT INTO profiles(user_uuid,uuid,full_name,photo,reputation) VALUES(?,?,?,?,?)",
-		su.Profile.User.Uuid,
-		uuid.New().String(),
-		su.Profile.FullName,
-		"",
-		0)
-}
-
 type SendResetPasswordEmail struct {
 	In  *events.SendResetPasswordEmailRequested
 	DBO DBOperator
@@ -378,10 +435,10 @@ func (pr SendResetPasswordEmail) SendEmail() *events.ResetPasswordEmailSent {
 	var resetPasswordID uint64
 
 	if row.Scan(&resetPasswordID) == sql.ErrNoRows {
-		err = pr.DBO.Command("INSERT INTO reset_passwords(user_uuid,token) VALUES(?,?);", user.Uuid, string(resetJWT))
+		_, err = pr.DBO.Command("INSERT INTO reset_passwords(user_uuid,token) VALUES(?,?);", user.Uuid, string(resetJWT))
 		errorkit.ErrorHandled(err)
 	} else {
-		err = pr.DBO.Command("UPDATE reset_passwords SET token=? WHERE user_uuid=?;", string(resetJWT), user.Uuid)
+		_, err = pr.DBO.Command("UPDATE reset_passwords SET token=? WHERE user_uuid=?;", string(resetJWT), user.Uuid)
 		errorkit.ErrorHandled(err)
 	}
 	// check reset password, insert if not exists update if does
@@ -480,7 +537,7 @@ func (rp ResetPassword) Reset() *events.PasswordReseted {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(rp.In.NewPassword), bcrypt.MinCost)
 	errorkit.ErrorHandled(err)
 	log.Printf("hashed new password = %s", hashedPassword)
-	err = rp.DBO.Command("UPDATE users SET password=? WHERE uuid=?;", hashedPassword, userUUID)
+	_, err = rp.DBO.Command("UPDATE users SET password=? WHERE uuid=?;", hashedPassword, userUUID)
 	errorkit.ErrorHandled(err)
 	// update password
 

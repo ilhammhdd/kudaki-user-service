@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ilhammhdd/kudaki-entities/events"
+	"github.com/ilhammhdd/kudaki-entities/kudakiredisearch"
 	"github.com/ilhammhdd/kudaki-user-service/adapters"
 
 	"github.com/ilhammhdd/go-toolkit/errorkit"
@@ -18,8 +19,8 @@ import (
 )
 
 func Signup() {
-	consMemberName := "SignupRequested"
-	topic := events.UserTopic_name[int32(events.UserTopic_SIGN_UP_REQUESTED)]
+	consMemberName := events.UserTopic_SIGN_UP_REQUESTED.String()
+	topic := events.UserTopic_SIGN_UP_REQUESTED.String()
 	groupID := uuid.New().String()
 
 	for i := 0; i < 5; i++ {
@@ -34,7 +35,7 @@ func Signup() {
 			for {
 				select {
 				case msg := <-consMember.Messages:
-					adapters.Signup(mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
+					adapters.Signup(kudakiredisearch.User, kudakiredisearch.Profile, mysql.NewDBOperation(), kafka.NewProduction(), msg.Value)
 				case errs := <-consMember.Errs:
 					errorkit.ErrorHandled(errs)
 				case <-signals:
