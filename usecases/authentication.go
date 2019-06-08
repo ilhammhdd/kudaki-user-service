@@ -9,9 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/RediSearch/redisearch-go/redisearch"
-	"github.com/ilhammhdd/kudaki-entities/kudakiredisearch"
-
 	"github.com/golang/protobuf/ptypes"
 
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
@@ -79,7 +76,7 @@ func (s *Signup) initUserAndProfile(inEvent *events.SignupRequested) (*user.User
 	return usr, profile
 }
 
-func (s *Signup) sendVerifEmail(usr *user.User, profile *user.Profile) (verifyToken string, mailErr error) {
+func (s *Signup) sendVerifyEmail(usr *user.User, profile *user.Profile) (verifyToken string, mailErr error) {
 	e := &jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
@@ -112,7 +109,7 @@ func (s *Signup) sendVerifEmail(usr *user.User, profile *user.Profile) (verifyTo
 	return string(jwtString), nil
 }
 
-func (s *Signup) produceVerifEmailSent(usr *user.User, verifyToken string) {
+func (s *Signup) produceVerifyEmailSent(usr *user.User, verifyToken string) {
 	uves := new(events.UserVerificationEmailSent)
 	uves.EventStatus = new(events.Status)
 	uves.Uid = uuid.New().String()
@@ -132,56 +129,6 @@ func (s *Signup) produceVerifEmailSent(usr *user.User, verifyToken string) {
 		events.UserTopic_USER_VERIFICATION_EMAIL_SENT.String(), partition, offset, uves.Uid, duration.Seconds())
 }
 
-func (s *Signup) insertUserAndProfile(usr *user.User, profile *user.Profile) error {
-	_, err := s.DBO.Command("INSERT INTO users(uuid,email,password,token,role,phone_number,account_type) VALUES (?,?,?,?,?,?,?);",
-		usr.Uuid, usr.Email, usr.Password, usr.Token, usr.Role.String(), usr.PhoneNumber, usr.AccountType.String())
-	if errorkit.ErrorHandled(err) {
-		return err
-	}
-
-	_, err = s.DBO.Command("INSERT INTO profiles(uuid,user_uuid,full_name,photo,reputation) VALUES (?,?,?,?,?);",
-		profile.Uuid, profile.User.Uuid, profile.FullName, profile.Photo, profile.Reputation)
-	if errorkit.ErrorHandled(err) {
-		return err
-	}
-	return nil
-}
-
-func (s *Signup) indexUserAndProfile(usr *user.User, profile *user.Profile) error {
-	userClient := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
-	userClient.CreateIndex(kudakiredisearch.User.Schema())
-
-	userDoc := redisearch.NewDocument(kudakiredisearch.RedisearchText(usr.Uuid).Sanitize(), 1.0)
-	userDoc.Set("user_uuid", usr.Uuid)
-	userDoc.Set("user_email", usr.Email)
-	userDoc.Set("user_password", usr.Password)
-	userDoc.Set("user_token", usr.Token)
-	userDoc.Set("user_role", usr.Role.String())
-	userDoc.Set("user_phone_number", usr.PhoneNumber)
-	userDoc.Set("user_account_type", usr.AccountType.String())
-
-	err := userClient.IndexOptions(redisearch.DefaultIndexingOptions, userDoc)
-	if errorkit.ErrorHandled(err) {
-		return err
-	}
-
-	profileClient := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.Profile.Name())
-	profileClient.CreateIndex(kudakiredisearch.Profile.Schema())
-
-	profileDoc := redisearch.NewDocument(kudakiredisearch.RedisearchText(profile.Uuid).Sanitize(), 1.0)
-	profileDoc.Set("profile_uuid", profile.Uuid)
-	profileDoc.Set("profile_full_name", profile.FullName)
-	profileDoc.Set("profile_photo", profile.Photo)
-	profileDoc.Set("profile_reputation", profile.Reputation)
-
-	err = profileClient.IndexOptions(redisearch.DefaultIndexingOptions, profileDoc)
-	if errorkit.ErrorHandled(err) {
-		return err
-	}
-
-	return nil
-}
-
 func (s *Signup) Handle(in proto.Message) (out proto.Message) {
 	inEvent, outEvent := s.initInOutEvent(in)
 
@@ -193,24 +140,12 @@ func (s *Signup) Handle(in proto.Message) (out proto.Message) {
 	}
 
 	newUser, newProfile := s.initUserAndProfile(inEvent)
-	if verifyToken, mailErr := s.sendVerifEmail(newUser, newProfile); mailErr != nil {
+	if verifyToken, mailErr := s.sendVerifyEmail(newUser, newProfile); mailErr != nil {
 		outEvent.EventStatus.HttpCode = http.StatusInternalServerError
 		outEvent.EventStatus.Errors = []string{"error occured while sending verification email"}
 		return outEvent
 	} else {
-		s.produceVerifEmailSent(newUser, verifyToken)
-	}
-
-	if s.insertUserAndProfile(newUser, newProfile) != nil {
-		outEvent.EventStatus.HttpCode = http.StatusInternalServerError
-		outEvent.EventStatus.Errors = []string{"error occured while inserting new user and profile"}
-		return outEvent
-	}
-
-	if s.indexUserAndProfile(newUser, newProfile) != nil {
-		outEvent.EventStatus.HttpCode = http.StatusInternalServerError
-		outEvent.EventStatus.Errors = []string{"error occured while indexing new user and profile"}
-		return outEvent
+		s.produceVerifyEmailSent(newUser, verifyToken)
 	}
 
 	outEvent.EventStatus.HttpCode = http.StatusOK

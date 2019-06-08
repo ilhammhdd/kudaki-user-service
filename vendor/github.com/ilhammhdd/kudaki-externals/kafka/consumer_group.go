@@ -8,7 +8,7 @@ import (
 
 	"github.com/ilhammhdd/go-toolkit/errorkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
-	"gopkg.in/Shopify/sarama.v1"
+	sarama "gopkg.in/Shopify/sarama.v1"
 )
 
 type ConsumptionMember struct {

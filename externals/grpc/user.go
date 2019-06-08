@@ -8,7 +8,7 @@ import (
 
 	"github.com/ilhammhdd/go-toolkit/errorkit"
 	"github.com/ilhammhdd/kudaki-entities/user"
-	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
+	"github.com/ilhammhdd/kudaki-externals/mysql"
 
 	"github.com/golang/protobuf/ptypes"
 

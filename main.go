@@ -27,7 +27,7 @@ import (
 
 	external_grpc "github.com/ilhammhdd/kudaki-user-service/externals/grpc"
 
-	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
+	"github.com/ilhammhdd/kudaki-externals/mysql"
 )
 
 func init() {
@@ -69,13 +69,7 @@ func initAdmin() {
 	dbo := mysql.NewDBOperation()
 	result, err := dbo.Command(
 		"INSERT INTO users(uuid,email,password,token,role,phone_number,account_type) VALUES(?,?,?,?,?,?,?)",
-		uuid,
-		"service@kudaki.id",
-		password,
-		"",
-		user.Role_name[int32(user.Role_ADMIN)],
-		"",
-		user.AccountType_name[int32(user.AccountType_NATIVE)])
+		uuid, "kudaki.service@gmail.com", password, "", user.Role_name[int32(user.Role_ADMIN)], "", user.AccountType_name[int32(user.AccountType_NATIVE)])
 	errorkit.ErrorHandled(err)
 	userlastInsertedID, err := result.LastInsertId()
 
@@ -84,7 +78,7 @@ func initAdmin() {
 	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(uuid).Sanitize(), 1.0)
 	doc.Set("user_id", userlastInsertedID)
 	doc.Set("user_uuid", kudakiredisearch.RedisearchText(uuid).Sanitize())
-	doc.Set("user_email", kudakiredisearch.RedisearchText("service@kudaki.id").Sanitize())
+	doc.Set("user_email", kudakiredisearch.RedisearchText("kudaki.service@gmail.com").Sanitize())
 	doc.Set("user_password", password)
 	doc.Set("user_token", "")
 	doc.Set("user_role", user.Role_ADMIN.String())
@@ -103,13 +97,6 @@ func adminExists() bool {
 	var totalIds int
 	row.Scan(&totalIds)
 
-	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
-	client.CreateIndex(kudakiredisearch.User.Schema())
-	rawQuery := fmt.Sprintf("@user_role:{%s}", user.Role_ADMIN.String())
-	query := redisearch.NewQuery(rawQuery)
-	_, _, err = client.Search(query)
-	errorkit.ErrorHandled(err)
-
 	return totalIds == 1
 }
 
@@ -125,7 +112,7 @@ func grpcListener() {
 func main() {
 	wp := safekit.NewWorkerPool()
 
-	wp.Work <- eventdriven.Signup
+	wp.Worker <- new(eventdriven.Signup)
 	wp.Work <- grpcListener
 
 	wp.PoolWG.Wait()

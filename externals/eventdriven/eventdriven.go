@@ -6,23 +6,30 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/google/uuid"
 	"github.com/ilhammhdd/go-toolkit/errorkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
+	"github.com/ilhammhdd/kudaki-externals/kafka"
 	"github.com/ilhammhdd/kudaki-user-service/adapters"
-	"github.com/ilhammhdd/kudaki-user-service/externals/kafka"
 	"github.com/ilhammhdd/kudaki-user-service/usecases"
 	"gopkg.in/Shopify/sarama.v1"
 )
 
 const TOTAL_CONSUMER_MEMBER = 5
 
+type PostUsecaseExecutor interface {
+	ExecutePostUsecase(inEvent proto.Message, outEvent proto.Message)
+}
+
 type EventDrivenExternal struct {
-	inTopics           []string
-	eventName          string
-	eventDrivenAdapter adapters.EventDrivenAdapter
-	eventDrivenUsecase usecases.EventDrivenUsecase
-	outTopic           string
+	inTopics            []string
+	eventName           string
+	eventDrivenAdapter  adapters.EventDrivenAdapter
+	eventDrivenUsecase  usecases.EventDrivenUsecase
+	outTopic            string
+	PostUsecaseExecutor PostUsecaseExecutor
 }
 
 func (edc *EventDrivenExternal) produce(key string, msg []byte) {
@@ -51,10 +58,15 @@ func (edc *EventDrivenExternal) handle() {
 			for {
 				select {
 				case msg := <-consMember.Messages:
-					if in, ok := edc.eventDrivenAdapter.ParseIn(msg.Value); ok {
+					if inEvent, ok := edc.eventDrivenAdapter.ParseIn(msg.Value); ok {
 						cl.Log(msg.Partition, msg.Offset, string(msg.Key))
-						out := edc.eventDrivenUsecase.Handle(in)
-						outKey, outMsg := edc.eventDrivenAdapter.ParseOut(out)
+						outEvent := edc.eventDrivenUsecase.Handle(inEvent)
+
+						if edc.PostUsecaseExecutor != nil {
+							edc.PostUsecaseExecutor.ExecutePostUsecase(inEvent, outEvent)
+						}
+
+						outKey, outMsg := edc.eventDrivenAdapter.ParseOut(outEvent)
 						edc.produce(outKey, outMsg)
 					}
 				case errs := <-consMember.Errs:

@@ -92,7 +92,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:95790033c3f485063ff4e608661272d454c19f733b39ffca682826e96c822395"
+  digest = "1:32fde96e9508127d52400997053398518301c9009932eede3d084f9560df764a"
   name = "github.com/ilhammhdd/go-toolkit"
   packages = [
     "errorkit",
@@ -100,7 +100,7 @@
     "safekit",
   ]
   pruneopts = "UT"
-  revision = "e8e0b4523d2600181fc0d74d30375bde65ac88ab"
+  revision = "effb6d3db0fbaad3438a04cd1f70c98b3d27f134"
 
 [[projects]]
   branch = "master"
@@ -117,6 +117,17 @@
   ]
   pruneopts = "UT"
   revision = "bd31f973d064d0cb75abcc1d04148633b386032b"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a8c4c5bf76b7d67c146416ff53e84479fde153b755b7e3f2500658866adb08b7"
+  name = "github.com/ilhammhdd/kudaki-externals"
+  packages = [
+    "kafka",
+    "mysql",
+  ]
+  pruneopts = "UT"
+  revision = "a6330f849bc8542aff542e0f2a0f1026ceafaac0"
 
 [[projects]]
   digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
@@ -266,7 +277,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/RediSearch/redisearch-go/redisearch",
-    "github.com/go-sql-driver/mysql",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
     "github.com/google/uuid",
@@ -277,6 +287,8 @@
     "github.com/ilhammhdd/kudaki-entities/kudakiredisearch",
     "github.com/ilhammhdd/kudaki-entities/rpc",
     "github.com/ilhammhdd/kudaki-entities/user",
+    "github.com/ilhammhdd/kudaki-externals/kafka",
+    "github.com/ilhammhdd/kudaki-externals/mysql",
     "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
     "gopkg.in/Shopify/sarama.v1",
