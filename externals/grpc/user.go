@@ -15,6 +15,7 @@ import (
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
 
 	"github.com/ilhammhdd/kudaki-entities/events"
+	kudakirpc "github.com/ilhammhdd/kudaki-entities/rpc"
 )
 
 type User struct{}
@@ -36,7 +37,7 @@ func (u User) Login(context.Context, *events.LoginRequested) (*events.Loggedin, 
 	return nil, nil
 }
 
-func (u User) UserAuthentication(ctx context.Context, uar *events.UserAuthenticationRequested) (*events.UserAuthenticated, error) {
+func (u User) UserAuthentication(ctx context.Context, uar *kudakirpc.UserAuthenticationRequested) (*kudakirpc.UserAuthenticated, error) {
 
 	e := &jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
@@ -44,7 +45,7 @@ func (u User) UserAuthentication(ctx context.Context, uar *events.UserAuthentica
 
 	ok, err := jwtkit.VerifyJWTString(e, jwtkit.JWTString(uar.Jwt))
 
-	ua := events.UserAuthenticated{
+	ua := kudakirpc.UserAuthenticated{
 		Uid:         uar.Uid,
 		EventStatus: new(events.Status)}
 
@@ -66,7 +67,7 @@ func (u User) ChangePassword(ctx context.Context, rpp *events.ChangePasswordRequ
 	return nil, nil
 }
 
-func (u User) UserAuthorization(ctx context.Context, uar *events.UserAuthorizationRequested) (*events.UserAuthorized, error) {
+func (u User) UserAuthorization(ctx context.Context, uar *kudakirpc.UserAuthorizationRequested) (*kudakirpc.UserAuthorized, error) {
 
 	jwt, err := jwtkit.GetJWT(jwtkit.JWTString(uar.Jwt))
 	errorkit.ErrorHandled(err)
@@ -80,7 +81,7 @@ func (u User) UserAuthorization(ctx context.Context, uar *events.UserAuthorizati
 	if scanErr := row.Scan(&totalUserId); scanErr == sql.ErrNoRows {
 		grpcErr := "user's role not authorized"
 
-		return &events.UserAuthorized{
+		return &kudakirpc.UserAuthorized{
 			EventStatus: &events.Status{
 				Errors:    []string{grpcErr},
 				HttpCode:  http.StatusUnauthorized,
@@ -88,7 +89,7 @@ func (u User) UserAuthorization(ctx context.Context, uar *events.UserAuthorizati
 			Uid: uar.Uid,
 		}, nil
 	} else {
-		return &events.UserAuthorized{
+		return &kudakirpc.UserAuthorized{
 			EventStatus: &events.Status{
 				HttpCode:  http.StatusOK,
 				Timestamp: ptypes.TimestampNow()},

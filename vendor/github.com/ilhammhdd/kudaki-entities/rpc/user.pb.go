@@ -8,6 +8,7 @@ import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	events "github.com/ilhammhdd/kudaki-entities/events"
+	user "github.com/ilhammhdd/kudaki-entities/user"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -25,29 +26,257 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type UserAuthenticationRequested struct {
+	Uid                  string   `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Jwt                  string   `protobuf:"bytes,2,opt,name=jwt,proto3" json:"jwt,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UserAuthenticationRequested) Reset()         { *m = UserAuthenticationRequested{} }
+func (m *UserAuthenticationRequested) String() string { return proto.CompactTextString(m) }
+func (*UserAuthenticationRequested) ProtoMessage()    {}
+func (*UserAuthenticationRequested) Descriptor() ([]byte, []int) {
+	return fileDescriptor_27d7a9c2ccec3127, []int{0}
+}
+
+func (m *UserAuthenticationRequested) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UserAuthenticationRequested.Unmarshal(m, b)
+}
+func (m *UserAuthenticationRequested) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UserAuthenticationRequested.Marshal(b, m, deterministic)
+}
+func (m *UserAuthenticationRequested) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UserAuthenticationRequested.Merge(m, src)
+}
+func (m *UserAuthenticationRequested) XXX_Size() int {
+	return xxx_messageInfo_UserAuthenticationRequested.Size(m)
+}
+func (m *UserAuthenticationRequested) XXX_DiscardUnknown() {
+	xxx_messageInfo_UserAuthenticationRequested.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UserAuthenticationRequested proto.InternalMessageInfo
+
+func (m *UserAuthenticationRequested) GetUid() string {
+	if m != nil {
+		return m.Uid
+	}
+	return ""
+}
+
+func (m *UserAuthenticationRequested) GetJwt() string {
+	if m != nil {
+		return m.Jwt
+	}
+	return ""
+}
+
+type UserAuthenticated struct {
+	Uid                  string         `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	EventStatus          *events.Status `protobuf:"bytes,2,opt,name=event_status,json=eventStatus,proto3" json:"event_status,omitempty"`
+	User                 *user.User     `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *UserAuthenticated) Reset()         { *m = UserAuthenticated{} }
+func (m *UserAuthenticated) String() string { return proto.CompactTextString(m) }
+func (*UserAuthenticated) ProtoMessage()    {}
+func (*UserAuthenticated) Descriptor() ([]byte, []int) {
+	return fileDescriptor_27d7a9c2ccec3127, []int{1}
+}
+
+func (m *UserAuthenticated) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UserAuthenticated.Unmarshal(m, b)
+}
+func (m *UserAuthenticated) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UserAuthenticated.Marshal(b, m, deterministic)
+}
+func (m *UserAuthenticated) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UserAuthenticated.Merge(m, src)
+}
+func (m *UserAuthenticated) XXX_Size() int {
+	return xxx_messageInfo_UserAuthenticated.Size(m)
+}
+func (m *UserAuthenticated) XXX_DiscardUnknown() {
+	xxx_messageInfo_UserAuthenticated.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UserAuthenticated proto.InternalMessageInfo
+
+func (m *UserAuthenticated) GetUid() string {
+	if m != nil {
+		return m.Uid
+	}
+	return ""
+}
+
+func (m *UserAuthenticated) GetEventStatus() *events.Status {
+	if m != nil {
+		return m.EventStatus
+	}
+	return nil
+}
+
+func (m *UserAuthenticated) GetUser() *user.User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
+
+type UserAuthorizationRequested struct {
+	Uid                  string    `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Role                 user.Role `protobuf:"varint,2,opt,name=role,proto3,enum=entities.user.Role" json:"role,omitempty"`
+	Jwt                  string    `protobuf:"bytes,3,opt,name=jwt,proto3" json:"jwt,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *UserAuthorizationRequested) Reset()         { *m = UserAuthorizationRequested{} }
+func (m *UserAuthorizationRequested) String() string { return proto.CompactTextString(m) }
+func (*UserAuthorizationRequested) ProtoMessage()    {}
+func (*UserAuthorizationRequested) Descriptor() ([]byte, []int) {
+	return fileDescriptor_27d7a9c2ccec3127, []int{2}
+}
+
+func (m *UserAuthorizationRequested) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UserAuthorizationRequested.Unmarshal(m, b)
+}
+func (m *UserAuthorizationRequested) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UserAuthorizationRequested.Marshal(b, m, deterministic)
+}
+func (m *UserAuthorizationRequested) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UserAuthorizationRequested.Merge(m, src)
+}
+func (m *UserAuthorizationRequested) XXX_Size() int {
+	return xxx_messageInfo_UserAuthorizationRequested.Size(m)
+}
+func (m *UserAuthorizationRequested) XXX_DiscardUnknown() {
+	xxx_messageInfo_UserAuthorizationRequested.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UserAuthorizationRequested proto.InternalMessageInfo
+
+func (m *UserAuthorizationRequested) GetUid() string {
+	if m != nil {
+		return m.Uid
+	}
+	return ""
+}
+
+func (m *UserAuthorizationRequested) GetRole() user.Role {
+	if m != nil {
+		return m.Role
+	}
+	return user.Role_USER
+}
+
+func (m *UserAuthorizationRequested) GetJwt() string {
+	if m != nil {
+		return m.Jwt
+	}
+	return ""
+}
+
+type UserAuthorized struct {
+	Uid                  string         `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	EventStatus          *events.Status `protobuf:"bytes,2,opt,name=event_status,json=eventStatus,proto3" json:"event_status,omitempty"`
+	User                 *user.User     `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *UserAuthorized) Reset()         { *m = UserAuthorized{} }
+func (m *UserAuthorized) String() string { return proto.CompactTextString(m) }
+func (*UserAuthorized) ProtoMessage()    {}
+func (*UserAuthorized) Descriptor() ([]byte, []int) {
+	return fileDescriptor_27d7a9c2ccec3127, []int{3}
+}
+
+func (m *UserAuthorized) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UserAuthorized.Unmarshal(m, b)
+}
+func (m *UserAuthorized) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UserAuthorized.Marshal(b, m, deterministic)
+}
+func (m *UserAuthorized) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UserAuthorized.Merge(m, src)
+}
+func (m *UserAuthorized) XXX_Size() int {
+	return xxx_messageInfo_UserAuthorized.Size(m)
+}
+func (m *UserAuthorized) XXX_DiscardUnknown() {
+	xxx_messageInfo_UserAuthorized.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UserAuthorized proto.InternalMessageInfo
+
+func (m *UserAuthorized) GetUid() string {
+	if m != nil {
+		return m.Uid
+	}
+	return ""
+}
+
+func (m *UserAuthorized) GetEventStatus() *events.Status {
+	if m != nil {
+		return m.EventStatus
+	}
+	return nil
+}
+
+func (m *UserAuthorized) GetUser() *user.User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
+
+func init() {
+	proto.RegisterType((*UserAuthenticationRequested)(nil), "rpc.UserAuthenticationRequested")
+	proto.RegisterType((*UserAuthenticated)(nil), "rpc.UserAuthenticated")
+	proto.RegisterType((*UserAuthorizationRequested)(nil), "rpc.UserAuthorizationRequested")
+	proto.RegisterType((*UserAuthorized)(nil), "rpc.UserAuthorized")
+}
+
 func init() { proto.RegisterFile("rpc/user.proto", fileDescriptor_27d7a9c2ccec3127) }
 
 var fileDescriptor_27d7a9c2ccec3127 = []byte{
-	// 299 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x92, 0x4d, 0x4b, 0x03, 0x31,
-	0x10, 0x86, 0x0f, 0xd5, 0x1e, 0x02, 0x56, 0x3a, 0x52, 0x91, 0x82, 0x82, 0x9e, 0x44, 0x70, 0x17,
-	0xf5, 0xec, 0x41, 0x45, 0xf0, 0x50, 0x41, 0x5a, 0xf4, 0xe0, 0x2d, 0xdd, 0x8c, 0xd9, 0xa1, 0xdd,
-	0x24, 0xe6, 0x43, 0xd1, 0xff, 0xeb, 0xff, 0x90, 0xdd, 0x6e, 0x9b, 0x5d, 0xdd, 0xe3, 0xbc, 0xcf,
-	0x9b, 0x27, 0x61, 0x08, 0x1b, 0x58, 0x93, 0xa5, 0xc1, 0xa1, 0x4d, 0x8c, 0xd5, 0x5e, 0x43, 0xcf,
-	0x9a, 0x6c, 0x3c, 0xc4, 0x0f, 0x54, 0xde, 0x35, 0xf2, 0xcb, 0x9f, 0x1e, 0xdb, 0x7a, 0x76, 0x68,
-	0xe1, 0x82, 0xf5, 0x67, 0x24, 0x55, 0x30, 0xb0, 0x9f, 0x54, 0xb5, 0x64, 0x35, 0x4e, 0xf1, 0x3d,
-	0xa0, 0xf3, 0x28, 0xc6, 0xbb, 0x8d, 0x1c, 0x45, 0x30, 0x70, 0xcd, 0xd8, 0x0b, 0x5a, 0x7a, 0xfb,
-	0xaa, 0x04, 0xe3, 0x1a, 0xc7, 0x28, 0x1e, 0xdd, 0xab, 0x59, 0x99, 0x56, 0x9c, 0x50, 0x40, 0xca,
-	0xb6, 0x27, 0x5a, 0x92, 0x82, 0x51, 0x4d, 0xab, 0xe9, 0xff, 0x7d, 0x13, 0x2d, 0x25, 0x0a, 0x52,
-	0x30, 0x65, 0x50, 0x0a, 0x6e, 0x82, 0xcf, 0x51, 0x79, 0xca, 0xb8, 0x27, 0xad, 0xe0, 0xa4, 0xe1,
-	0x6e, 0xa3, 0xa8, 0x3a, 0xe8, 0xee, 0xa0, 0x80, 0x47, 0x36, 0x5c, 0x87, 0xda, 0xd2, 0xf7, 0x4a,
-	0x79, 0xfc, 0xa7, 0xbe, 0x21, 0xd1, 0x38, 0xea, 0xa8, 0xa0, 0x80, 0x07, 0x36, 0xb8, 0xcb, 0xb9,
-	0x92, 0xf8, 0xc4, 0x9d, 0xfb, 0xd4, 0x56, 0xc0, 0x51, 0x5d, 0x6c, 0xc7, 0x51, 0xb4, 0xde, 0xf6,
-	0x9a, 0xac, 0x7a, 0xe5, 0xc3, 0x76, 0xa6, 0xe8, 0xd0, 0x6f, 0x44, 0x87, 0x75, 0xb1, 0x95, 0x46,
-	0x4f, 0x27, 0xbe, 0x2f, 0x38, 0x2d, 0x67, 0xa8, 0xfc, 0xed, 0xd9, 0xeb, 0xa9, 0x24, 0x9f, 0x87,
-	0x79, 0x92, 0xe9, 0x22, 0xa5, 0x65, 0xce, 0x8b, 0x22, 0x17, 0x22, 0x5d, 0x04, 0xc1, 0x17, 0x74,
-	0x5e, 0x2e, 0xc4, 0x13, 0xba, 0xd4, 0x9a, 0x6c, 0xde, 0xaf, 0xbe, 0xc6, 0xd5, 0x6f, 0x00, 0x00,
-	0x00, 0xff, 0xff, 0x84, 0x6e, 0xfa, 0x3e, 0x44, 0x02, 0x00, 0x00,
+	// 441 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x53, 0x5d, 0x6b, 0xd4, 0x40,
+	0x14, 0x65, 0xcd, 0x5a, 0xf0, 0xd6, 0x6e, 0xed, 0x5d, 0x2c, 0x4b, 0x44, 0x2d, 0xfb, 0xd2, 0x22,
+	0x98, 0x68, 0x7d, 0xf6, 0xa1, 0x8a, 0xa0, 0x50, 0x45, 0xb2, 0xe8, 0x83, 0x2f, 0x92, 0x66, 0xae,
+	0xc9, 0xb4, 0x9b, 0x99, 0x38, 0x1f, 0x2e, 0x0a, 0x82, 0x7f, 0xd4, 0xff, 0x22, 0x33, 0x49, 0x36,
+	0x59, 0xb3, 0xe8, 0x5b, 0xdf, 0x72, 0xcf, 0x39, 0x73, 0xe6, 0x1c, 0xe6, 0x06, 0x26, 0xaa, 0xca,
+	0x62, 0xab, 0x49, 0x45, 0x95, 0x92, 0x46, 0x62, 0xa0, 0xaa, 0x2c, 0x3c, 0xa0, 0x6f, 0x24, 0x8c,
+	0xee, 0xe1, 0xe1, 0xb4, 0x81, 0xb4, 0x49, 0x8d, 0xd5, 0x0d, 0xb8, 0xef, 0x04, 0x3d, 0xd5, 0xfc,
+	0x0c, 0xee, 0x7d, 0xd0, 0xa4, 0xce, 0xac, 0x29, 0x48, 0x18, 0x9e, 0xa5, 0x86, 0x4b, 0x91, 0xd0,
+	0x57, 0x4b, 0xda, 0x10, 0xc3, 0x3b, 0x10, 0x58, 0xce, 0x66, 0xa3, 0xa3, 0xd1, 0xc9, 0xad, 0xc4,
+	0x7d, 0x3a, 0xe4, 0x72, 0x65, 0x66, 0x37, 0x6a, 0xe4, 0x72, 0x65, 0xe6, 0xbf, 0x46, 0x70, 0xf0,
+	0x97, 0xc7, 0xd6, 0x93, 0x4f, 0xe0, 0xb6, 0x8f, 0xf4, 0xb9, 0x4e, 0xe4, 0x2d, 0x76, 0x4f, 0xf7,
+	0x22, 0x0f, 0x46, 0x0b, 0x0f, 0x26, 0xbb, 0x7e, 0xaa, 0x07, 0x3c, 0x86, 0xb1, 0x8b, 0x3a, 0x0b,
+	0xbc, 0x72, 0x1a, 0x39, 0x77, 0xc3, 0x49, 0x47, 0xbe, 0x80, 0xbb, 0x33, 0xf1, 0x82, 0x39, 0x87,
+	0xb0, 0x4d, 0x20, 0x15, 0xff, 0xf1, 0xdf, 0x12, 0xc7, 0x30, 0x56, 0x72, 0x49, 0x3e, 0xc2, 0x64,
+	0x60, 0x9c, 0xc8, 0x25, 0x25, 0x5e, 0xd0, 0xb6, 0x0d, 0xba, 0xb6, 0x3f, 0x61, 0xd2, 0xbf, 0xea,
+	0x9a, 0x9b, 0x9e, 0xfe, 0x0e, 0x60, 0xec, 0x46, 0x7c, 0x0a, 0x3b, 0x0b, 0x9e, 0x0b, 0x5b, 0xe1,
+	0x61, 0xeb, 0xeb, 0xc7, 0x75, 0xed, 0x70, 0xbf, 0x87, 0x13, 0xb3, 0x15, 0x3e, 0x07, 0xf8, 0x48,
+	0x8a, 0x7f, 0xf9, 0xee, 0x0d, 0xc2, 0x86, 0xee, 0xa0, 0xee, 0xe8, 0xb4, 0xe1, 0x1c, 0xea, 0x79,
+	0x4e, 0x0c, 0x63, 0xb8, 0x79, 0x2e, 0x73, 0x2e, 0xf0, 0x6e, 0xc3, 0xfa, 0x69, 0x78, 0xdf, 0xb9,
+	0xcc, 0x73, 0x62, 0x5c, 0xe0, 0x3b, 0xc0, 0xe1, 0x6e, 0xe1, 0x51, 0xa4, 0xaa, 0x2c, 0xfa, 0xc7,
+	0xd2, 0x85, 0x87, 0xdb, 0x14, 0xc4, 0xf0, 0x4d, 0xb7, 0x67, 0xeb, 0x57, 0xc6, 0x87, 0x1b, 0xe2,
+	0xe1, 0xeb, 0x87, 0xd3, 0x81, 0x80, 0x18, 0xbe, 0x86, 0xc9, 0xcb, 0x22, 0x15, 0x39, 0xbd, 0x4f,
+	0xb5, 0x5e, 0x49, 0xc5, 0xf0, 0x41, 0x93, 0x7e, 0x13, 0xee, 0x87, 0xaa, 0xf9, 0x96, 0xa9, 0x75,
+	0x0c, 0xdf, 0xc2, 0x5e, 0x42, 0x9a, 0xcc, 0xda, 0xe8, 0x7e, 0x23, 0xdc, 0x40, 0x3b, 0x9f, 0xad,
+	0xf4, 0xab, 0x32, 0xe5, 0xcb, 0x05, 0x09, 0xf3, 0xe2, 0xd1, 0xa7, 0x93, 0x9c, 0x9b, 0xc2, 0x5e,
+	0x44, 0x99, 0x2c, 0x63, 0xbe, 0x2c, 0xd2, 0xb2, 0x2c, 0x18, 0x8b, 0xaf, 0x2c, 0x4b, 0xaf, 0xf8,
+	0xe3, 0x76, 0x2f, 0x62, 0x55, 0x65, 0x17, 0x3b, 0xfe, 0x17, 0x7e, 0xf6, 0x27, 0x00, 0x00, 0xff,
+	0xff, 0x27, 0x2b, 0x7e, 0x2f, 0x12, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -65,8 +294,8 @@ type UserClient interface {
 	Signup(ctx context.Context, in *events.SignupRequested, opts ...grpc.CallOption) (*events.Signedup, error)
 	VerifyUser(ctx context.Context, in *events.VerifyUserRequested, opts ...grpc.CallOption) (*events.UserVerified, error)
 	Login(ctx context.Context, in *events.LoginRequested, opts ...grpc.CallOption) (*events.Loggedin, error)
-	UserAuthentication(ctx context.Context, in *events.UserAuthenticationRequested, opts ...grpc.CallOption) (*events.UserAuthenticated, error)
-	UserAuthorization(ctx context.Context, in *events.UserAuthorizationRequested, opts ...grpc.CallOption) (*events.UserAuthorized, error)
+	UserAuthentication(ctx context.Context, in *UserAuthenticationRequested, opts ...grpc.CallOption) (*UserAuthenticated, error)
+	UserAuthorization(ctx context.Context, in *UserAuthorizationRequested, opts ...grpc.CallOption) (*UserAuthorized, error)
 	ChangePassword(ctx context.Context, in *events.ChangePasswordRequested, opts ...grpc.CallOption) (*events.PasswordChanged, error)
 	ResetPassword(ctx context.Context, in *events.ResetPasswordRequested, opts ...grpc.CallOption) (*events.ResetPasswordEmailSent, error)
 }
@@ -106,8 +335,8 @@ func (c *userClient) Login(ctx context.Context, in *events.LoginRequested, opts 
 	return out, nil
 }
 
-func (c *userClient) UserAuthentication(ctx context.Context, in *events.UserAuthenticationRequested, opts ...grpc.CallOption) (*events.UserAuthenticated, error) {
-	out := new(events.UserAuthenticated)
+func (c *userClient) UserAuthentication(ctx context.Context, in *UserAuthenticationRequested, opts ...grpc.CallOption) (*UserAuthenticated, error) {
+	out := new(UserAuthenticated)
 	err := c.cc.Invoke(ctx, "/rpc.User/UserAuthentication", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -115,8 +344,8 @@ func (c *userClient) UserAuthentication(ctx context.Context, in *events.UserAuth
 	return out, nil
 }
 
-func (c *userClient) UserAuthorization(ctx context.Context, in *events.UserAuthorizationRequested, opts ...grpc.CallOption) (*events.UserAuthorized, error) {
-	out := new(events.UserAuthorized)
+func (c *userClient) UserAuthorization(ctx context.Context, in *UserAuthorizationRequested, opts ...grpc.CallOption) (*UserAuthorized, error) {
+	out := new(UserAuthorized)
 	err := c.cc.Invoke(ctx, "/rpc.User/UserAuthorization", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -147,8 +376,8 @@ type UserServer interface {
 	Signup(context.Context, *events.SignupRequested) (*events.Signedup, error)
 	VerifyUser(context.Context, *events.VerifyUserRequested) (*events.UserVerified, error)
 	Login(context.Context, *events.LoginRequested) (*events.Loggedin, error)
-	UserAuthentication(context.Context, *events.UserAuthenticationRequested) (*events.UserAuthenticated, error)
-	UserAuthorization(context.Context, *events.UserAuthorizationRequested) (*events.UserAuthorized, error)
+	UserAuthentication(context.Context, *UserAuthenticationRequested) (*UserAuthenticated, error)
+	UserAuthorization(context.Context, *UserAuthorizationRequested) (*UserAuthorized, error)
 	ChangePassword(context.Context, *events.ChangePasswordRequested) (*events.PasswordChanged, error)
 	ResetPassword(context.Context, *events.ResetPasswordRequested) (*events.ResetPasswordEmailSent, error)
 }
@@ -166,10 +395,10 @@ func (*UnimplementedUserServer) VerifyUser(ctx context.Context, req *events.Veri
 func (*UnimplementedUserServer) Login(ctx context.Context, req *events.LoginRequested) (*events.Loggedin, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (*UnimplementedUserServer) UserAuthentication(ctx context.Context, req *events.UserAuthenticationRequested) (*events.UserAuthenticated, error) {
+func (*UnimplementedUserServer) UserAuthentication(ctx context.Context, req *UserAuthenticationRequested) (*UserAuthenticated, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserAuthentication not implemented")
 }
-func (*UnimplementedUserServer) UserAuthorization(ctx context.Context, req *events.UserAuthorizationRequested) (*events.UserAuthorized, error) {
+func (*UnimplementedUserServer) UserAuthorization(ctx context.Context, req *UserAuthorizationRequested) (*UserAuthorized, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserAuthorization not implemented")
 }
 func (*UnimplementedUserServer) ChangePassword(ctx context.Context, req *events.ChangePasswordRequested) (*events.PasswordChanged, error) {
@@ -238,7 +467,7 @@ func _User_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 func _User_UserAuthentication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(events.UserAuthenticationRequested)
+	in := new(UserAuthenticationRequested)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -250,13 +479,13 @@ func _User_UserAuthentication_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/rpc.User/UserAuthentication",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).UserAuthentication(ctx, req.(*events.UserAuthenticationRequested))
+		return srv.(UserServer).UserAuthentication(ctx, req.(*UserAuthenticationRequested))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _User_UserAuthorization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(events.UserAuthorizationRequested)
+	in := new(UserAuthorizationRequested)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -268,7 +497,7 @@ func _User_UserAuthorization_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/rpc.User/UserAuthorization",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).UserAuthorization(ctx, req.(*events.UserAuthorizationRequested))
+		return srv.(UserServer).UserAuthorization(ctx, req.(*UserAuthorizationRequested))
 	}
 	return interceptor(ctx, in, info, handler)
 }

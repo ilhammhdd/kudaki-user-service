@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ilhammhdd/kudaki-user-service/externals/eventdriven"
+
 	"github.com/RediSearch/redisearch-go/redisearch"
 
 	"golang.org/x/crypto/bcrypt"
@@ -23,7 +25,6 @@ import (
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
 	"github.com/ilhammhdd/go-toolkit/safekit"
 
-	"github.com/ilhammhdd/kudaki-user-service/externals/eventsourcing"
 	external_grpc "github.com/ilhammhdd/kudaki-user-service/externals/grpc"
 
 	"github.com/ilhammhdd/kudaki-user-service/externals/mysql"
@@ -124,12 +125,7 @@ func grpcListener() {
 func main() {
 	wp := safekit.NewWorkerPool()
 
-	wp.Work <- eventsourcing.Signup
-	wp.Work <- eventsourcing.VerifyUser
-	wp.Work <- eventsourcing.Login
-	wp.Work <- eventsourcing.ChangePassword
-	wp.Job <- new(eventsourcing.SendResetPasswordEmail)
-	wp.Job <- new(eventsourcing.ResetPassword)
+	wp.Work <- eventdriven.Signup
 	wp.Work <- grpcListener
 
 	wp.PoolWG.Wait()

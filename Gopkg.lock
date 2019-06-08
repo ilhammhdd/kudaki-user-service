@@ -104,7 +104,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a3857502d40491c329c6be4e38e7826f91a0888c346ec7b3a4a8e57049d4a2d3"
+  digest = "1:f1c0db77f791e543e50abd2837bba3dfc1cd55b36222792505bb64ba7740c590"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     "events",
@@ -116,7 +116,7 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "66d6b27f458740d6a20e28707c32a3575b69a967"
+  revision = "bd31f973d064d0cb75abcc1d04148633b386032b"
 
 [[projects]]
   digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
@@ -146,11 +146,11 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "20be4c3c3ed52bfccdb2d59a412ee1a936d175a7"
+  revision = "f99c8df09eb5bff426315721bfa5f16a99cad32c"
 
 [[projects]]
   branch = "master"
-  digest = "1:d74f0c0ed416a7a676ef391036a62ecb207b5057636666b3a364397b7b5af3aa"
+  digest = "1:d31a812696686f0059241fa6c3b56d89ada56dddde4db1d5036de5c1084000c5"
   name = "golang.org/x/net"
   packages = [
     "http/httpguts",
@@ -161,7 +161,7 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "60506f45cf65977eb3a9c6e30f995f54a721c271"
+  revision = "461777fb6f67e8cb9d70cda16573678d085a74cf"
 
 [[projects]]
   branch = "master"
@@ -169,7 +169,7 @@
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "4c4f7f33c9ed00de01c4c741d2177abfcfe19307"
+  revision = "5b15430b70e38eb7f9c844f97c25f25a246d5c63"
 
 [[projects]]
   digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
@@ -201,8 +201,8 @@
   name = "google.golang.org/appengine"
   packages = ["cloudsql"]
   pruneopts = "UT"
-  revision = "4c25cacc810c02874000e4f7071286a8e96b2515"
-  version = "v1.6.0"
+  revision = "b2f4a3cf3c67576a2ee09e1fe62656a5086ce880"
+  version = "v1.6.1"
 
 [[projects]]
   branch = "master"
@@ -210,7 +210,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "fb225487d10142b5bcc35abfc6cb9a0609614976"
+  revision = "eb0b1bdb6ae60fcfc41b8d907b50dfb346112301"
 
 [[projects]]
   digest = "1:e8800ddadd6bce3bc0c5ffd7bc55dbdddc6e750956c10cc10271cade542fccbe"

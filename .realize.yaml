@@ -20,9 +20,10 @@ schema:
     - -- DB_USERNAME root
     - -- DB_PASSWORD mysqlrocks
     - -- DB_NAME kudaki_user
-    - -- MAIL service@kudaki.id
+    - -- MAIL kudaki.service@gmail.com
     - -- MAIL_PASSWORD OlahragaOtak2K19!
-    - -- MAIL_HOST mail.privateemail.com
+    - -- MAIL_HOST smtp.gmail.com
+    - -- MAIL_PORT 587
     - -- VERIFICATION_PRIVATE_KEY ./verification_private.pem
     - -- VERIFICATION_PUBLIC_KEY ./verification_public.pem
     - -- GATEWAY_HOST localhost:9001

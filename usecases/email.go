@@ -34,7 +34,7 @@ func (m Mail) SendWithTLS() error {
 	}
 	message += "\r\n" + base64.StdEncoding.EncodeToString(m.Body)
 
-	servername := host + ":587"
+	servername := host + ":" + os.Getenv("MAIL_PORT")
 	auth := smtp.PlainAuth("", m.From.Address, password, host)
 
 	tlsConf := &tls.Config{
