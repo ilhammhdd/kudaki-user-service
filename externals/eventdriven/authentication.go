@@ -149,3 +149,48 @@ func (vu *VerifyUser) ExecutePostUsecase(inEvent proto.Message, outEvent proto.M
 	_, err := dbo.Command("DELETE FROM unverified_users WHERE user_uuid = ?;", out.User.Uuid)
 	errorkit.ErrorHandled(err)
 }
+
+type ChangePassword struct{}
+
+func (cp *ChangePassword) ExecutePostUsecase(inEvent proto.Message, outEvent proto.Message) {
+	out := outEvent.(*events.PasswordChanged)
+
+	if out.EventStatus.HttpCode != http.StatusOK {
+		return
+	}
+
+	cp.updateUsersPassword(out.User)
+	cp.reIndexUser(out.User)
+}
+
+func (cp *ChangePassword) updateUsersPassword(usr *user.User) {
+	dbo := mysql.NewDBOperation()
+	_, err := dbo.Command("UPDATE users SET password = ? WHERE uuid = ?;", usr.Password, usr.Uuid)
+	errorkit.ErrorHandled(err)
+}
+
+func (cp *ChangePassword) reIndexUser(usr *user.User) {
+	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
+	client.CreateIndex(kudakiredisearch.User.Schema())
+
+	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(usr.Uuid).Sanitize(), 1.0)
+	doc.Set("user_password", usr.Password)
+
+	err := client.IndexOptions(redisearch.IndexingOptions{Partial: true, Replace: true}, doc)
+	errorkit.ErrorHandled(err)
+}
+
+func (cp *ChangePassword) Work() interface{} {
+	usecase := &usecases.ChangePassword{DBO: mysql.NewDBOperation()}
+
+	ede := EventDrivenExternal{
+		PostUsecaseExecutor: cp,
+		eventDrivenAdapter:  new(adapters.ChangePassword),
+		eventDrivenUsecase:  usecase,
+		eventName:           events.UserTopic_CHANGE_PASSWORD_REQUESTED.String(),
+		inTopics:            []string{events.UserTopic_CHANGE_PASSWORD_REQUESTED.String()},
+		outTopic:            events.UserTopic_PASSWORD_CHANGED.String()}
+
+	ede.handle()
+	return nil
+}

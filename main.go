@@ -115,6 +115,7 @@ func main() {
 	wp.Worker <- new(eventdriven.Signup)
 	wp.Worker <- new(eventdriven.Login)
 	wp.Worker <- new(eventdriven.VerifyUser)
+	wp.Worker <- new(eventdriven.ChangePassword)
 	wp.Work <- grpcListener
 
 	wp.PoolWG.Wait()
