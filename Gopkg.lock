@@ -120,11 +120,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a8c4c5bf76b7d67c146416ff53e84479fde153b755b7e3f2500658866adb08b7"
+  digest = "1:75451f13d227859cc76aea125f59697e153fec744b2fbf7457b03f1b7a18ebf7"
   name = "github.com/ilhammhdd/kudaki-externals"
   packages = [
     "kafka",
     "mysql",
+    "redisearch",
   ]
   pruneopts = "UT"
   revision = "a6330f849bc8542aff542e0f2a0f1026ceafaac0"
@@ -289,6 +290,7 @@
     "github.com/ilhammhdd/kudaki-entities/user",
     "github.com/ilhammhdd/kudaki-externals/kafka",
     "github.com/ilhammhdd/kudaki-externals/mysql",
+    "github.com/ilhammhdd/kudaki-externals/redisearch",
     "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
     "gopkg.in/Shopify/sarama.v1",

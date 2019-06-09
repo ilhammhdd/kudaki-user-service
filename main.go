@@ -113,6 +113,8 @@ func main() {
 	wp := safekit.NewWorkerPool()
 
 	wp.Worker <- new(eventdriven.Signup)
+	wp.Worker <- new(eventdriven.Login)
+	wp.Worker <- new(eventdriven.VerifyUser)
 	wp.Work <- grpcListener
 
 	wp.PoolWG.Wait()
