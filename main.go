@@ -14,10 +14,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
-	"github.com/ilhammhdd/kudaki-entities/kudakiredisearch"
 	"github.com/ilhammhdd/kudaki-entities/user"
+	kudakiredisearch "github.com/ilhammhdd/kudaki-externals/redisearch"
 
-	"github.com/ilhammhdd/kudaki-entities/rpc"
+	kudakigrpc "github.com/ilhammhdd/kudaki-externals/grpc"
 
 	"google.golang.org/grpc"
 
@@ -105,7 +105,7 @@ func grpcListener() {
 	errorkit.ErrorHandled(err)
 
 	grpcServer := grpc.NewServer()
-	rpc.RegisterUserServer(grpcServer, external_grpc.User{})
+	kudakigrpc.RegisterUserServer(grpcServer, external_grpc.User{})
 	errorkit.ErrorHandled(grpcServer.Serve(lis))
 }
 
@@ -116,6 +116,8 @@ func main() {
 	wp.Worker <- new(eventdriven.Login)
 	wp.Worker <- new(eventdriven.VerifyUser)
 	wp.Worker <- new(eventdriven.ChangePassword)
+	wp.Worker <- new(eventdriven.ResetPasswordSendEmail)
+	wp.Worker <- new(eventdriven.ResetPassword)
 	wp.Work <- grpcListener
 
 	wp.PoolWG.Wait()

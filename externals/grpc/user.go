@@ -15,7 +15,7 @@ import (
 	"github.com/ilhammhdd/go-toolkit/jwtkit"
 
 	"github.com/ilhammhdd/kudaki-entities/events"
-	kudakirpc "github.com/ilhammhdd/kudaki-entities/rpc"
+	kudakigrpc "github.com/ilhammhdd/kudaki-externals/grpc"
 )
 
 type User struct{}
@@ -37,7 +37,7 @@ func (u User) Login(context.Context, *events.LoginRequested) (*events.Loggedin, 
 	return nil, nil
 }
 
-func (u User) UserAuthentication(ctx context.Context, uar *kudakirpc.UserAuthenticationRequested) (*kudakirpc.UserAuthenticated, error) {
+func (u User) UserAuthentication(ctx context.Context, uar *kudakigrpc.UserAuthenticationRequested) (*kudakigrpc.UserAuthenticated, error) {
 
 	e := &jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
@@ -45,7 +45,7 @@ func (u User) UserAuthentication(ctx context.Context, uar *kudakirpc.UserAuthent
 
 	ok, err := jwtkit.VerifyJWTString(e, jwtkit.JWTString(uar.Jwt))
 
-	ua := kudakirpc.UserAuthenticated{
+	ua := kudakigrpc.UserAuthenticated{
 		Uid:         uar.Uid,
 		EventStatus: new(events.Status)}
 
@@ -67,7 +67,7 @@ func (u User) ChangePassword(ctx context.Context, rpp *events.ChangePasswordRequ
 	return nil, nil
 }
 
-func (u User) UserAuthorization(ctx context.Context, uar *kudakirpc.UserAuthorizationRequested) (*kudakirpc.UserAuthorized, error) {
+func (u User) UserAuthorization(ctx context.Context, uar *kudakigrpc.UserAuthorizationRequested) (*kudakigrpc.UserAuthorized, error) {
 
 	jwt, err := jwtkit.GetJWT(jwtkit.JWTString(uar.Jwt))
 	errorkit.ErrorHandled(err)
@@ -81,7 +81,7 @@ func (u User) UserAuthorization(ctx context.Context, uar *kudakirpc.UserAuthoriz
 	if scanErr := row.Scan(&totalUserId); scanErr == sql.ErrNoRows {
 		grpcErr := "user's role not authorized"
 
-		return &kudakirpc.UserAuthorized{
+		return &kudakigrpc.UserAuthorized{
 			EventStatus: &events.Status{
 				Errors:    []string{grpcErr},
 				HttpCode:  http.StatusUnauthorized,
@@ -89,7 +89,7 @@ func (u User) UserAuthorization(ctx context.Context, uar *kudakirpc.UserAuthoriz
 			Uid: uar.Uid,
 		}, nil
 	} else {
-		return &kudakirpc.UserAuthorized{
+		return &kudakigrpc.UserAuthorized{
 			EventStatus: &events.Status{
 				HttpCode:  http.StatusOK,
 				Timestamp: ptypes.TimestampNow()},

@@ -104,25 +104,24 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f1c0db77f791e543e50abd2837bba3dfc1cd55b36222792505bb64ba7740c590"
+  digest = "1:d07d8fa423c13126812802551ff814e572f38ab2feda239660031bf191d9abca"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     "events",
-    "kudakiredisearch",
     "mountain",
     "rental",
-    "rpc",
     "store",
     "user",
   ]
   pruneopts = "UT"
-  revision = "bd31f973d064d0cb75abcc1d04148633b386032b"
+  revision = "3dd2d2545a3fd5f16c7d4bf3279698a7b76f3daa"
 
 [[projects]]
   branch = "master"
-  digest = "1:75451f13d227859cc76aea125f59697e153fec744b2fbf7457b03f1b7a18ebf7"
+  digest = "1:ea64b42758e22ec86eb440d3feba000f4760bf3753adc83c5606ba9ba7bdfad7"
   name = "github.com/ilhammhdd/kudaki-externals"
   packages = [
+    "grpc",
     "kafka",
     "mysql",
     "redisearch",
@@ -181,7 +180,7 @@
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "5b15430b70e38eb7f9c844f97c25f25a246d5c63"
+  revision = "1e42afee0f762ed3d76e6dd942e4181855fd1849"
 
 [[projects]]
   digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
@@ -285,9 +284,8 @@
     "github.com/ilhammhdd/go-toolkit/jwtkit",
     "github.com/ilhammhdd/go-toolkit/safekit",
     "github.com/ilhammhdd/kudaki-entities/events",
-    "github.com/ilhammhdd/kudaki-entities/kudakiredisearch",
-    "github.com/ilhammhdd/kudaki-entities/rpc",
     "github.com/ilhammhdd/kudaki-entities/user",
+    "github.com/ilhammhdd/kudaki-externals/grpc",
     "github.com/ilhammhdd/kudaki-externals/kafka",
     "github.com/ilhammhdd/kudaki-externals/mysql",
     "github.com/ilhammhdd/kudaki-externals/redisearch",

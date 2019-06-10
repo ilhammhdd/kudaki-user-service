@@ -194,3 +194,74 @@ func (cp *ChangePassword) Work() interface{} {
 	ede.handle()
 	return nil
 }
+
+type ResetPasswordSendEmail struct{}
+
+func (rpse *ResetPasswordSendEmail) Work() interface{} {
+	usecase := usecases.ResetPasswordSendEmail{DBO: mysql.NewDBOperation()}
+
+	ede := EventDrivenExternal{
+		PostUsecaseExecutor: rpse,
+		eventDrivenAdapter:  new(adapters.ResetPasswordSendEmail),
+		eventDrivenUsecase:  &usecase,
+		eventName:           events.UserTopic_SEND_RESET_PASSWORD_EMAIL_REQUESTED.String(),
+		inTopics:            []string{events.UserTopic_SEND_RESET_PASSWORD_EMAIL_REQUESTED.String()},
+		outTopic:            events.UserTopic_RESET_PASSWORD_EMAIL_SENT.String()}
+
+	ede.handle()
+	return nil
+}
+
+func (rpse *ResetPasswordSendEmail) ExecutePostUsecase(inEvent proto.Message, outEvent proto.Message) {
+	out := outEvent.(*events.ResetPasswordEmailSent)
+
+	if out.EventStatus.HttpCode != http.StatusOK {
+		return
+	}
+
+	dbo := mysql.NewDBOperation()
+	_, err := dbo.Command("INSERT INTO reset_passwords(user_uuid,token) VALUES(?,?) ON DUPLICATE KEY UPDATE token = ?;", out.User.Uuid, out.RestToken, out.User.Uuid)
+	errorkit.ErrorHandled(err)
+}
+
+type ResetPassword struct{}
+
+func (rp *ResetPassword) Work() interface{} {
+	usecase := &usecases.ResetPassword{DBO: mysql.NewDBOperation()}
+
+	ede := EventDrivenExternal{
+		PostUsecaseExecutor: rp,
+		eventDrivenAdapter:  new(adapters.ResetPassword),
+		eventDrivenUsecase:  usecase,
+		eventName:           events.UserTopic_RESET_PASSWORD_REQUESTED.String(),
+		inTopics:            []string{events.UserTopic_RESET_PASSWORD_REQUESTED.String()},
+		outTopic:            events.UserTopic_PASSWORD_RESETED.String()}
+
+	ede.handle()
+	return nil
+}
+
+func (rp *ResetPassword) ExecutePostUsecase(inEvent proto.Message, outEvent proto.Message) {
+	out := outEvent.(*events.PasswordReseted)
+
+	rp.updateUser(out)
+	rp.reIndexUser(out)
+}
+
+func (rp *ResetPassword) updateUser(out *events.PasswordReseted) {
+	dbo := mysql.NewDBOperation()
+
+	_, err := dbo.Command("UPDATE users SET password=? WHERE uuid = ?;", out.User.Password, out.User.Uuid)
+	errorkit.ErrorHandled(err)
+}
+
+func (rp *ResetPassword) reIndexUser(out *events.PasswordReseted) {
+	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
+	client.CreateIndex(kudakiredisearch.User.Schema())
+
+	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(out.User.Uuid).Sanitize(), 1.0)
+	doc.Set("user_password", out.User.Password)
+
+	err := client.IndexOptions(redisearch.IndexingOptions{Partial: true, Replace: true}, doc)
+	errorkit.ErrorHandled(err)
+}
