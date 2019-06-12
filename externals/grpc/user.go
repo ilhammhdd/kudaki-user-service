@@ -38,16 +38,24 @@ func (u User) Login(context.Context, *events.LoginRequested) (*events.Loggedin, 
 }
 
 func (u User) UserAuthentication(ctx context.Context, uar *kudakigrpc.UserAuthenticationRequested) (*kudakigrpc.UserAuthenticated, error) {
+	ua := kudakigrpc.UserAuthenticated{
+		Uid:         uar.Uid,
+		EventStatus: new(events.Status)}
+
+	userFromKudakiToken := u.getUserFromKudakiToken(uar.Jwt)
+	if _, ok := u.userExists(userFromKudakiToken); !ok {
+		ua.EventStatus.HttpCode = http.StatusNotFound
+		ua.EventStatus.Timestamp = ptypes.TimestampNow()
+		ua.EventStatus.Errors = []string{"user not found"}
+
+		return &ua, nil
+	}
 
 	e := &jwtkit.ECDSA{
 		PrivateKeyPath: os.Getenv("VERIFICATION_PRIVATE_KEY"),
 		PublicKeyPath:  os.Getenv("VERIFICATION_PUBLIC_KEY")}
 
 	ok, err := jwtkit.VerifyJWTString(e, jwtkit.JWTString(uar.Jwt))
-
-	ua := kudakigrpc.UserAuthenticated{
-		Uid:         uar.Uid,
-		EventStatus: new(events.Status)}
 
 	if !ok {
 		ua.EventStatus.HttpCode = http.StatusUnauthorized
@@ -60,6 +68,39 @@ func (u User) UserAuthentication(ctx context.Context, uar *kudakigrpc.UserAuthen
 	}
 
 	return &ua, err
+}
+
+func (u User) getUserFromKudakiToken(kudakiToken string) *user.User {
+	jwt, err := jwtkit.GetJWT(jwtkit.JWTString(kudakiToken))
+	errorkit.ErrorHandled(err)
+
+	userClaim := jwt.Payload.Claims["user"].(map[string]interface{})
+	usr := &user.User{
+		AccountType: user.AccountType(user.AccountType_value[userClaim["account_type"].(string)]),
+		Email:       userClaim["email"].(string),
+		PhoneNumber: userClaim["phone_number"].(string),
+		Role:        user.Role(user.Role_value[userClaim["role"].(string)]),
+		Uuid:        userClaim["uuid"].(string),
+	}
+
+	return usr
+}
+
+func (u User) userExists(usr *user.User) (*user.User, bool) {
+	dbo := mysql.NewDBOperation()
+	row, err := dbo.QueryRow("SELECT uuid,email,password,token,role,phone_number,account_type FROM users WHERE uuid = ?;", usr.Uuid)
+	errorkit.ErrorHandled(err)
+
+	var retrievedUser user.User
+	var role string
+	var accountType string
+	if row.Scan(&retrievedUser.Uuid, &retrievedUser.Email, &retrievedUser.Password, &retrievedUser.Token, &role, &retrievedUser.PhoneNumber, &accountType) == sql.ErrNoRows {
+		return nil, false
+	}
+	retrievedUser.Role = user.Role(user.Role_value[role])
+	retrievedUser.AccountType = user.AccountType(user.AccountType_value[accountType])
+
+	return &retrievedUser, true
 }
 
 func (u User) ChangePassword(ctx context.Context, rpp *events.ChangePasswordRequested) (*events.PasswordChanged, error) {

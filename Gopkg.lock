@@ -118,7 +118,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ea64b42758e22ec86eb440d3feba000f4760bf3753adc83c5606ba9ba7bdfad7"
+  digest = "1:0baef1fad00459360b98497a438ff6149b49d28a75c1ec0e398aefb880f45f23"
   name = "github.com/ilhammhdd/kudaki-externals"
   packages = [
     "grpc",
@@ -127,7 +127,7 @@
     "redisearch",
   ]
   pruneopts = "UT"
-  revision = "a6330f849bc8542aff542e0f2a0f1026ceafaac0"
+  revision = "09113d4c5e03b83a64bc50bb81e84fc438e55e6b"
 
 [[projects]]
   digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
@@ -157,7 +157,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "f99c8df09eb5bff426315721bfa5f16a99cad32c"
+  revision = "5c40567a22f818bd14a1ea7245dad9f8ef0691aa"
 
 [[projects]]
   branch = "master"
@@ -221,7 +221,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "eb0b1bdb6ae60fcfc41b8d907b50dfb346112301"
+  revision = "a7e196e89fd3a3c4d103ca540bd5dac3a736e375"
 
 [[projects]]
   digest = "1:e8800ddadd6bce3bc0c5ffd7bc55dbdddc6e750956c10cc10271cade542fccbe"
