@@ -34,25 +34,30 @@ func (s *Signup) Work() interface{} {
 
 func (s *Signup) ExecutePostUsecase(inEvent proto.Message, outEvent proto.Message) {
 	out := outEvent.(*events.Signedup)
-	s.insertUserAndProfile(out.Profile.User, out.Profile)
-	s.indexUserAndProfile(out.Profile.User, out.Profile)
+	s.insertUser(out.Profile.User)
+	s.insertProfile(out.Profile)
+	s.indexUser(out.Profile.User)
+	s.indexProfile(out.Profile.User.Uuid, out.Profile)
 }
 
-func (s *Signup) insertUserAndProfile(usr *user.User, profile *user.Profile) {
+func (s *Signup) insertUser(usr *user.User) {
 	dbo := mysql.NewDBOperation()
 	_, err := dbo.Command("INSERT INTO users(uuid,email,password,token,role,phone_number,account_type) VALUES (?,?,?,?,?,?,?);",
 		usr.Uuid, usr.Email, usr.Password, usr.Token, usr.Role.String(), usr.PhoneNumber, usr.AccountType.String())
-	errorkit.ErrorHandled(err)
-
-	_, err = dbo.Command("INSERT INTO profiles(uuid,user_uuid,full_name,photo,reputation) VALUES (?,?,?,?,?);",
-		profile.Uuid, profile.User.Uuid, profile.FullName, profile.Photo, profile.Reputation)
 	errorkit.ErrorHandled(err)
 
 	_, err = dbo.Command("INSERT INTO unverified_users(user_uuid) VALUES (?);", usr.Uuid)
 	errorkit.ErrorHandled(err)
 }
 
-func (s *Signup) indexUserAndProfile(usr *user.User, profile *user.Profile) {
+func (s *Signup) insertProfile(profile *user.Profile) {
+	dbo := mysql.NewDBOperation()
+	_, err := dbo.Command("INSERT INTO profiles(uuid,user_uuid,full_name,photo,reputation) VALUES (?,?,?,?,?);",
+		profile.Uuid, profile.User.Uuid, profile.FullName, profile.Photo, profile.Reputation)
+	errorkit.ErrorHandled(err)
+}
+
+func (s *Signup) indexUser(usr *user.User) {
 	userClient := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
 	userClient.CreateIndex(kudakiredisearch.User.Schema())
 
@@ -68,19 +73,21 @@ func (s *Signup) indexUserAndProfile(usr *user.User, profile *user.Profile) {
 
 	err := userClient.IndexOptions(redisearch.DefaultIndexingOptions, userDoc)
 	errorkit.ErrorHandled(err)
+}
 
+func (s *Signup) indexProfile(userUUID string, profile *user.Profile) {
 	profileClient := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.Profile.Name())
 	profileClient.CreateIndex(kudakiredisearch.Profile.Schema())
 
 	sanitizedProfileUUID := kudakiredisearch.RedisearchText(profile.Uuid).Sanitize()
 	profileDoc := redisearch.NewDocument(sanitizedProfileUUID, 1.0)
 	profileDoc.Set("profile_uuid", sanitizedProfileUUID)
-	profileDoc.Set("user_uuid", sanitizedUserUUID)
+	profileDoc.Set("user_uuid", kudakiredisearch.RedisearchText(userUUID).Sanitize())
 	profileDoc.Set("profile_full_name", profile.FullName)
 	profileDoc.Set("profile_photo", profile.Photo)
 	profileDoc.Set("profile_reputation", profile.Reputation)
 
-	err = profileClient.IndexOptions(redisearch.DefaultIndexingOptions, profileDoc)
+	err := profileClient.IndexOptions(redisearch.DefaultIndexingOptions, profileDoc)
 	errorkit.ErrorHandled(err)
 }
 
