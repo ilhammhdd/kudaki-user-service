@@ -22,8 +22,8 @@
   name = "github.com/eapache/go-resiliency"
   packages = ["breaker"]
   pruneopts = "UT"
-  revision = "ea41b0fad31007accc7f806884dcdf3da98b79ce"
-  version = "v1.1.0"
+  revision = "5efd2ed019fd331ec2defc6f3bd98882f1e3e636"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -104,7 +104,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d2ab7eda8225ae62bb22abea3f78174f4815adeccf518015583a6eb3821720a0"
+  digest = "1:7951d3292dbc4a10f08badb98b2fdd7b8ad07745d66ac29df3f18dc8b8e09ec2"
   name = "github.com/ilhammhdd/kudaki-entities"
   packages = [
     "events",
@@ -114,11 +114,11 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "cf3b3b4ee1f44f8faa39010b85886ca67045c11e"
+  revision = "796139347662d55ff36a7b89f9717b2e3aebe5cc"
 
 [[projects]]
   branch = "master"
-  digest = "1:72972382f3bf0c516035708cbdf0bc58d9f41ea98880a84a39b352ab33e639c5"
+  digest = "1:b500ca7caeb3369749bf11662fb34cd9a05f5c73c88e08ba2114d24e77921af1"
   name = "github.com/ilhammhdd/kudaki-externals"
   packages = [
     "grpc",
@@ -127,7 +127,7 @@
     "redisearch",
   ]
   pruneopts = "UT"
-  revision = "eefed371939a9d72d4b75aae2b4e521e20de0951"
+  revision = "b48b69a96f9919ca51cdec173b43717ea98f5b90"
 
 [[projects]]
   digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
@@ -172,15 +172,15 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "3f473d35a33aa6fdd203e306dc439b797820e3f1"
+  revision = "d28f0bde5980168871434b95cfc858db9f2a7a99"
 
 [[projects]]
   branch = "master"
-  digest = "1:010311506e3917b54487c35a4277e2709678a40c1587d82492c40b78b6a0a01d"
+  digest = "1:f928471955a5e8c1d148de46c6660e9fc4d08fa0ed065f90d9adba8fe1fe6101"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "93c9922d18aeb82498a065f07aec7ad7fa60dfb7"
+  revision = "b47fdc937951267e2d980171881317deea47f29b"
 
 [[projects]]
   digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
