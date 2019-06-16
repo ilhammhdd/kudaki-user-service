@@ -38,6 +38,13 @@ func init() {
 		}
 	}
 
+	// debugging
+	log.Printf("MAIL = %s", os.Getenv("MAIL"))
+	log.Printf("MAIL_PASSWORD = %s", os.Getenv("MAIL_PASSWORD"))
+	log.Printf("MAIL_HOST = %s", os.Getenv("MAIL_HOST"))
+	log.Printf("MAIL_PORT = %s", os.Getenv("MAIL_PORT"))
+	// debugging
+
 	mysql.OpenDB(os.Getenv("DB_PATH"), os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 
 	initJWT()

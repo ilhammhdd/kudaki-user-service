@@ -34,6 +34,11 @@ func (s *Signup) Work() interface{} {
 
 func (s *Signup) ExecutePostUsecase(inEvent proto.Message, outEvent proto.Message) {
 	out := outEvent.(*events.Signedup)
+
+	if out.EventStatus.HttpCode != http.StatusOK {
+		return
+	}
+
 	s.insertUser(out.Profile.User)
 	s.insertProfile(out.Profile)
 	s.indexUser(out.Profile.User)
@@ -253,6 +258,9 @@ func (rp *ResetPassword) Work() interface{} {
 
 func (rp *ResetPassword) ExecutePostUsecase(inEvent proto.Message, outEvent proto.Message) {
 	out := outEvent.(*events.PasswordReseted)
+	if out.EventStatus.HttpCode != http.StatusOK {
+		return
+	}
 
 	rp.updateUser(out)
 	rp.reIndexUser(out)
