@@ -82,10 +82,16 @@ func initAdmin() {
 
 	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
 	client.CreateIndex(kudakiredisearch.User.Schema())
-	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(uuid).Sanitize(), 1.0)
+
+	sanitizer := new(kudakiredisearch.RedisearchText)
+
+	sanitizer.Set(uuid)
+	sanitizedUserUUID := sanitizer.Sanitize()
+	doc := redisearch.NewDocument(sanitizedUserUUID, 1.0)
 	doc.Set("user_id", userlastInsertedID)
-	doc.Set("user_uuid", kudakiredisearch.RedisearchText(uuid).Sanitize())
-	doc.Set("user_email", kudakiredisearch.RedisearchText("kudaki.service@gmail.com").Sanitize())
+	doc.Set("user_uuid", sanitizedUserUUID)
+	sanitizer.Set("kudaki.service@gmail.com")
+	doc.Set("user_email", sanitizer.Sanitize())
 	doc.Set("user_password", password)
 	doc.Set("user_token", "")
 	doc.Set("user_role", user.Role_ADMIN.String())

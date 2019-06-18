@@ -66,7 +66,10 @@ func (s *Signup) indexUser(usr *user.User) {
 	userClient := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
 	userClient.CreateIndex(kudakiredisearch.User.Schema())
 
-	sanitizedUserUUID := kudakiredisearch.RedisearchText(usr.Uuid).Sanitize()
+	sanitizer := new(kudakiredisearch.RedisearchText)
+
+	sanitizer.Set(usr.Uuid)
+	sanitizedUserUUID := sanitizer.Sanitize()
 	userDoc := redisearch.NewDocument(sanitizedUserUUID, 1.0)
 	userDoc.Set("user_uuid", sanitizedUserUUID)
 	userDoc.Set("user_email", usr.Email)
@@ -84,10 +87,15 @@ func (s *Signup) indexProfile(userUUID string, profile *user.Profile) {
 	profileClient := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.Profile.Name())
 	profileClient.CreateIndex(kudakiredisearch.Profile.Schema())
 
-	sanitizedProfileUUID := kudakiredisearch.RedisearchText(profile.Uuid).Sanitize()
+	sanitizer := new(kudakiredisearch.RedisearchText)
+
+	sanitizer.Set(profile.Uuid)
+	sanitizedProfileUUID := sanitizer.Sanitize()
 	profileDoc := redisearch.NewDocument(sanitizedProfileUUID, 1.0)
 	profileDoc.Set("profile_uuid", sanitizedProfileUUID)
-	profileDoc.Set("user_uuid", kudakiredisearch.RedisearchText(userUUID).Sanitize())
+
+	sanitizer.Set(userUUID)
+	profileDoc.Set("user_uuid", sanitizer.Sanitize())
 	profileDoc.Set("profile_full_name", profile.FullName)
 	profileDoc.Set("profile_photo", profile.Photo)
 	profileDoc.Set("profile_reputation", profile.Reputation)
@@ -132,7 +140,10 @@ func (l *Login) reindexUser(usr *user.User) {
 	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
 	client.CreateIndex(kudakiredisearch.User.Schema())
 
-	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(usr.Uuid).Sanitize(), 1.0)
+	sanitizer := new(kudakiredisearch.RedisearchText)
+
+	sanitizer.Set(usr.Uuid)
+	doc := redisearch.NewDocument(sanitizer.Sanitize(), 1.0)
 	doc.Set("user_token", usr.Token)
 	client.IndexOptions(redisearch.IndexingOptions{Partial: true, Replace: true}, doc)
 }
@@ -188,7 +199,10 @@ func (cp *ChangePassword) reIndexUser(usr *user.User) {
 	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
 	client.CreateIndex(kudakiredisearch.User.Schema())
 
-	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(usr.Uuid).Sanitize(), 1.0)
+	sanitizer := new(kudakiredisearch.RedisearchText)
+
+	sanitizer.Set(usr.Uuid)
+	doc := redisearch.NewDocument(sanitizer.Sanitize(), 1.0)
 	doc.Set("user_password", usr.Password)
 
 	err := client.IndexOptions(redisearch.IndexingOptions{Partial: true, Replace: true}, doc)
@@ -277,7 +291,10 @@ func (rp *ResetPassword) reIndexUser(out *events.PasswordReseted) {
 	client := redisearch.NewClient(os.Getenv("REDISEARCH_SERVER"), kudakiredisearch.User.Name())
 	client.CreateIndex(kudakiredisearch.User.Schema())
 
-	doc := redisearch.NewDocument(kudakiredisearch.RedisearchText(out.User.Uuid).Sanitize(), 1.0)
+	sanitizer := new(kudakiredisearch.RedisearchText)
+
+	sanitizer.Set(out.User.Uuid)
+	doc := redisearch.NewDocument(sanitizer.Sanitize(), 1.0)
 	doc.Set("user_password", out.User.Password)
 
 	err := client.IndexOptions(redisearch.IndexingOptions{Partial: true, Replace: true}, doc)

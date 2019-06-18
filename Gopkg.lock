@@ -118,7 +118,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b500ca7caeb3369749bf11662fb34cd9a05f5c73c88e08ba2114d24e77921af1"
+  digest = "1:5e545cb2aef7d043111a677f70431323c89c1a23dbcdf09433bc959fa30bc426"
   name = "github.com/ilhammhdd/kudaki-externals"
   packages = [
     "grpc",
@@ -127,7 +127,7 @@
     "redisearch",
   ]
   pruneopts = "UT"
-  revision = "b48b69a96f9919ca51cdec173b43717ea98f5b90"
+  revision = "a87eb2daf8dc60b0d5f91fb3ad842c12eb4ad1b8"
 
 [[projects]]
   digest = "1:259f9b7645983a7a823318d78aa96dec68af8891f706493ac1ec04d819cb977c"
@@ -157,7 +157,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "5c40567a22f818bd14a1ea7245dad9f8ef0691aa"
+  revision = "57b3e21c3d5606066a87e63cfe07ec6b9f0db000"
 
 [[projects]]
   branch = "master"
@@ -176,11 +176,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f928471955a5e8c1d148de46c6660e9fc4d08fa0ed065f90d9adba8fe1fe6101"
+  digest = "1:249fd56fb36a223aee164e2dc35e3b3a1b92dd3873dfb60216280b9fb9d4a784"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "b47fdc937951267e2d980171881317deea47f29b"
+  revision = "15dcb6c0061f497a3f66e3ea034b629c6dd4d99e"
 
 [[projects]]
   digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
